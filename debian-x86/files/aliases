@@ -14,3 +14,11 @@ fi
 alias ll='ls -alF'
 alias la='ls -A'
 alias l='ls -CF'
+
+# kubectl aliases
+alias k='kubectl'
+alias kn='kubens'
+alias kx='kubectx'
+alias kgp='kubectl get pods'
+alias kgs='kubectl get services'
+alias kgd='kubectl get deployments'
