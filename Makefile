@@ -11,8 +11,8 @@ endif
 
 install_ssh:
 	make check_home
-	mkdir ${HOME}/ssh
-	ssh-keygen -q -f ${HOME}/ssh/id_rsa
+	mkdir -p ${HOME}/.ssh
+	ssh-keygen -q -f ${HOME}/.ssh/id_rsa
 
 install_debian-x86:
 	make check_home
