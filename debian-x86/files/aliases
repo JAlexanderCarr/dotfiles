@@ -15,6 +15,9 @@ alias ll='ls -alF'
 alias la='ls -A'
 alias l='ls -CF'
 
+# python aliases
+alias py='python3'
+
 # kubectl aliases
 alias k='kubectl'
 alias kn='kubens'
