@@ -1,0 +1,7 @@
+# Kubernetes
+complete -o default -F __start_kubectl k
+complete -F _kube_namespaces kn
+complete -F _kube_contexts kx
+
+# Node/NVM
+[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion

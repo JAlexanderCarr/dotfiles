@@ -2,13 +2,11 @@
 set -eou pipefail
 
 # Creating a log file
-echo "debian-arm packages"
+echo "debian-arm64 packages"
 logfile=$(date +"%d%b%Y_%H:%M_logs.txt")
 touch $logfile
 exec &> $logfile
 set -x
-
-echo "currently testing"
 
 # Setting up package manager
 sudo apt-get update -y
