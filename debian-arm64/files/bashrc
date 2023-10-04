@@ -95,6 +95,9 @@ else
 fi
 unset color_prompt force_color_prompt compensate
 
+# Load NVM
+[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+
 # Alias definitions.
 # You may want to put all your additions into a separate file like
 # ~/.bash_aliases, instead of adding them here directly.
@@ -108,8 +111,8 @@ fi
 # sources /etc/bash.bashrc).
 if [ -f /etc/bash_completion ] && ! shopt -oq posix; then
    . /etc/bash_completion
+   . ~/.bash_completion
 fi
-
 
 # # setting the font
 # sudo setfont fira-nerd

@@ -1,10 +1,10 @@
 SHELL := /bin/bash
 
-DEBIAN-X86_DIR := debian-x86
-DEBIAN-ARM_DIR := debian-arm
+DEBIAN-AMD64_DIR := debian-amd64
+DEBIAN-ARM64_DIR := debian-arm64
 
--include debian-x86/Makefile
--include debian-arm/Makefile
+-include debian-amd64/Makefile
+-include debian-arm64/Makefile
 
 check_home:
 ifndef HOME_DIR
@@ -16,22 +16,22 @@ install_ssh:
 	mkdir -p ${HOME_DIR}/.ssh
 	ssh-keygen -q -f ${HOME_DIR}/.ssh/id_rsa
 
-install_debian-x86:
+install_debian-amd64:
 	make check_home
-	make debian-x86_packages
-	make debian-x86_files
-	make debian-x86_config
+	make debian-amd64_packages
+	make debian-amd64_files
+	make debian-amd64_config
 
-setup_debian-x86:
-	make install_debian-x86
+setup_debian-amd64:
+	make install_debian-amd64
 	make install_ssh
 
-install_debian-arm:
+install_debian-arm64:
 	make check_home
-	make debian-arm_packages
-	make debian-arm_files
-	make debian-arm_config
+	make debian-arm64_packages
+	make debian-arm64_files
+	make debian-arm64_config
 
-setup_debian-arm:
-	make install_debian-arm
+setup_debian-arm64:
+	make install_debian-arm64
 	make install_ssh
