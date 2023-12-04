@@ -20,6 +20,8 @@ alias g='git'
 alias gs='git status'
 alias ga='git add'
 alias gc='git commit'
+alias gaa='git add -A'
+alias gam='git add -u'
 
 # python aliases
 alias py='python3'
