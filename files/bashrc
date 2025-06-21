@@ -55,16 +55,18 @@ k8s_info() {
 
 # adding runtime of previous command to prompt
 function timer_start() {
-    start_time=$(date +%s%3N)
+    start_time=$(date +%s%N)
 }
 
 function timer_stop() {
-    end_time=$(date +%s%3N)
-    timer_show=$(( end_time - start_time ))
+    end_time=$(date +%s%N)
+    timer_show=$(( (end_time - start_time) / 1000000 ))
 }
 
+# Set timer_start before every command
 trap 'timer_start' DEBUG
 
+# Set timer_stop before every prompt
 if [ "$PROMPT_COMMAND" == "" ]; then
   PROMPT_COMMAND="timer_stop"
 else
@@ -113,6 +115,8 @@ if [ -f /etc/bash_completion ] && ! shopt -oq posix; then
    . /etc/bash_completion
    . ~/.bash_completion
 fi
+
+
 
 # # setting the font
 # sudo setfont fira-nerd
