@@ -1,0 +1,105 @@
+# ~/.zshrc: executed by zsh for non-login shells.
+
+# If not running interactively, don't do anything
+[[ $- != *i* ]] && return
+
+# don't put duplicate lines in the history
+setopt HIST_IGNORE_ALL_DUPS
+setopt HIST_IGNORE_SPACE
+
+# append to the history file, don't overwrite it
+setopt APPEND_HISTORY
+setopt INC_APPEND_HISTORY
+
+# set history size
+HISTSIZE=1000
+HISTFILESIZE=2000
+
+# make less more friendly for non-text input files
+[[ -x /usr/bin/lesspipe ]] && eval "$(SHELL=/bin/sh lesspipe)"
+
+# set variable identifying the chroot
+if [[ -z "$debian_chroot" && -r /etc/debian_chroot ]]; then
+    debian_chroot=$(cat /etc/debian_chroot 2>/dev/null)
+fi
+
+# --- GIT branch helper ---
+git_branch() {
+  local branch
+  if command -v git &>/dev/null && git rev-parse --is-inside-work-tree &>/dev/null; then
+    branch=$(git symbolic-ref --short HEAD 2>/dev/null || git describe --tags --exact-match 2>/dev/null)
+    if [[ -n $branch ]]; then
+      echo " ${branch} "
+    fi
+  fi
+}
+
+# --- Kubernetes context and namespace helper ---
+kube_info() {
+  if command -v kubectl &>/dev/null; then
+    local kube
+    kube=$(kubectl config view --minify --output 'jsonpath={.current-context}:{..namespace}' 2>/dev/null)
+    if [[ -n $kube ]]; then
+      echo "󰠳 ${kube} "
+    fi
+  fi
+}
+
+# --- Prompt timing ---
+timer_start() {
+  start_time=$(date +%s%N)
+}
+
+timer_stop() {
+  end_time=$(date +%s%N)
+  if [[ "$start_time" == "0" || -z "$start_time" ]]; then
+    timer_show=0
+  else
+    timer_show=$(((end_time - start_time) / 1000000))
+  fi
+}
+
+# --- Custom prompt ---
+setopt PROMPT_SUBST
+
+# Dynamically set PROMPT with printf to right-justify the time
+function set_zsh_prompt() {
+  local left right prompt_line
+  left="%F{yellow}$(git_branch)%f%F{blue}$(kube_info)%f%F{green}%n@%m%f%F{white}:%f%F{magenta}%~%f %F{white}${timer_show}ms%f"
+  right="%F{white}%D{%r}%f"
+  # Remove color codes for width calculation
+  local left_plain=$(print -P "$left" | sed 's/\x1b\[[0-9;]*m//g')
+  local right_plain=$(print -P "$right" | sed 's/\x1b\[[0-9;]*m//g')
+  local width=$COLUMNS
+  local left_len=${#left_plain}
+  local right_len=${#right_plain}
+  local space_count=$(( width - left_len - right_len - 1 ))
+  (( space_count < 1 )) && space_count=1
+  local spaces=""
+  for ((i=0; i<space_count; i++)); do spaces+=" "; done
+  prompt_line="$left$spaces$right"
+  PROMPT="$prompt_line%F{white}$%f "
+}
+
+preexec() {
+  timer_start
+}
+
+precmd() {
+  timer_stop
+  set_zsh_prompt
+}
+
+# Load NVM
+[ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
+
+# Alias definitions
+if [[ -f ~/.aliases ]]; then
+    source ~/.aliases
+fi
+
+# enable programmable completion features
+if [[ -f /etc/bash_completion ]]; then
+   source /etc/bash_completion
+   [[ -f ~/.bash_completion ]] && source ~/.bash_completion
+fi
