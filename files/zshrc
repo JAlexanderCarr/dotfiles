@@ -73,12 +73,12 @@ function set_zsh_prompt() {
   local width=$COLUMNS
   local left_len=${#left_plain}
   local right_len=${#right_plain}
-  local space_count=$(( width - left_len - right_len - 1 ))
+  local space_count=$(( width - left_len - right_len ))
   (( space_count < 1 )) && space_count=1
   local spaces=""
   for ((i=0; i<space_count; i++)); do spaces+=" "; done
   prompt_line="$left$spaces$right"
-  PROMPT="$prompt_line%F{white}$%f "
+  PROMPT="$(printf '%s\n%%F{white}$%%f ' "$prompt_line")"
 }
 
 preexec() {
