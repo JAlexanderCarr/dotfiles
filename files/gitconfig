@@ -3,4 +3,6 @@
 	email = jalexandercarr@gmail.com
 	username = JAlexanderCarr
 [init]
-	defaultBranch = master
+	defaultBranch = main
+[url "ssh://git@github.com/"]
+	insteadOf = https://github.com/
