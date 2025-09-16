@@ -1,6 +1,9 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+# FIXME: Fix node install
+exit 0
+
 : "${OS:=$(uname -s | tr '[:upper:]' '[:lower:]')}"
 : "${ARCH:=$(uname -m)}"
 
