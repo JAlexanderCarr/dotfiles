@@ -61,6 +61,8 @@ function timer_start() {
 function timer_stop() {
     end_time=$(date +%s%N)
     timer_show=$(( (end_time - start_time) / 1000000 ))
+    # FIXME: Fix timer prompt
+    timer_show="0"
 }
 
 # Set timer_start before every command
