@@ -15,11 +15,11 @@ backup() {
 # Map files/ to destinations (assume dotfiles go to $HOME)
 for f in ./*; do
     fname="$(basename "$f")"
-    if [[ "$fname" == "install.sh" ]]; then
+    if [[ "$fname" == "install.sh" || "$fname" == "backups" ]]; then
         continue
     fi
     backup "$HOME/.$fname"
-    cp -f "$f" "$HOME/.$fname"
+    cp -f -r "$f" "$HOME/.$fname"
     echo "[INSTALL] $f -> $HOME/.$fname"
 done
 
