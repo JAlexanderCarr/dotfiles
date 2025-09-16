@@ -4,16 +4,33 @@ set -euo pipefail
 : "${OS:=$(uname -s | tr '[:upper:]' '[:lower:]')}"
 : "${ARCH:=$(uname -m)}"
 
-KIND_ARCH="$ARCH"
-KUBECTL_ARCH="$ARCH"
-if [[ "$KIND_ARCH" == "x86_64" ]]; then
-    KIND_ARCH="amd64"
-elif [[ "$KIND_ARCH" == "arm64" || "$KIND_ARCH" == "aarch64" ]]; then
-    KIND_ARCH="arm64"
+# Normalize architecture for both kind and kubectl downloads
+ARCH_STD="$ARCH"
+if [[ "$ARCH_STD" == "x86_64" || "$ARCH_STD" == "amd64" ]]; then
+    ARCH_STD="amd64"
+elif [[ "$ARCH_STD" == "arm64" || "$ARCH_STD" == "aarch64" ]]; then
+    ARCH_STD="arm64"
 else
-    echo "Unsupported architecture for kind/kubectl: $KIND_ARCH"
+    echo "Unsupported architecture for kind/kubectl: $ARCH_STD"
     exit 1
 fi
+KIND_ARCH="$ARCH_STD"
+KUBECTL_ARCH="$ARCH_STD"
+
+# Ensure any git commands during this installation use HTTPS instead of SSH
+# and ignore system/global configs, as requested.
+git() {
+    GIT_CONFIG_NOSYSTEM=1 \
+    GIT_CONFIG_SYSTEM=/dev/null \
+    GIT_CONFIG_GLOBAL=/dev/null \
+    command git \
+      -c url."https://github.com/".insteadof=ssh://github.com/ \
+      -c url."https://github.com/".insteadof=ssh://git@github.com/ \
+      -c url."https://github.com/".insteadof=git@github.com: \
+      -c url."https://github.com/".insteadof=git://github.com/ \
+      "$@"
+}
+export -f git
 
 # Install kind
 if [[ "$OS" == "darwin" ]]; then
@@ -37,9 +54,9 @@ else
     rm -rf /opt/kubectx
     rm -f /usr/local/bin/kubectx
     rm -f /usr/local/bin/kubens
-    git clone https://github.com/ahmetb/kubectx /opt/kubectx
-    ln -s /opt/kubectx/kubectx /usr/local/bin/kubectx
-    ln -s /opt/kubectx/kubens /usr/local/bin/kubens
-    ln -s /opt/kubectx/completion/kubectx.bash /etc/bash_completion.d/kubectx
-    ln -s /opt/kubectx/completion/kubens.bash /etc/bash_completion.d/kubens
+    git clone https://github.com/ahmetb/kubectx.git /opt/kubectx
+    ln -sf /opt/kubectx/kubectx /usr/local/bin/kubectx
+    ln -sf /opt/kubectx/kubens /usr/local/bin/kubens
+    ln -sf /opt/kubectx/completion/kubectx.bash /etc/bash_completion.d/kubectx
+    ln -sf /opt/kubectx/completion/kubens.bash /etc/bash_completion.d/kubens
 fi
