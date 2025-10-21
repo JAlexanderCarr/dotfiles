@@ -22,6 +22,7 @@ alias ga='git add'
 alias gc='git commit'
 alias gaa='git add -A'
 alias gam='git add -u'
+alias gfp='git push --force-with-lease'
 
 # python aliases
 alias py='python3'

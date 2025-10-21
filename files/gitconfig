@@ -2,7 +2,12 @@
 	name = Alexander Carr
 	email = jalexandercarr@gmail.com
 	username = JAlexanderCarr
+	signingkey = ~/.ssh/id_github.pub
 [init]
 	defaultBranch = main
+[commit]
+	gpgsign = true
+[gpg]
+	format = ssh
 [url "ssh://git@github.com/"]
 	insteadOf = https://github.com/
