@@ -24,13 +24,17 @@ RUN useradd -ms /bin/bash -G sudo dev && \
     chmod 440 /etc/sudoers.d/dev && \
     chown -R dev:dev /opt/dotfiles
 
-USER dev
-ENV HOME=/home/dev
 WORKDIR /opt/dotfiles/scripts
 
-# Install files, fonts, and packages using individual scripts
+# Install packages using individual scripts (as root)
+RUN cd /opt/dotfiles/packages && DEBIAN_FRONTEND=noninteractive bash ./install.sh
+
+# Switch to non-root user
+USER dev
+ENV HOME=/home/dev
+
+# Install files and fonts using individual scripts (as non-root)
 RUN cd /opt/dotfiles/files && bash ./install.sh
 RUN cd /opt/dotfiles/fonts && bash ./install.sh
-RUN cd /opt/dotfiles/packages && sudo DEBIAN_FRONTEND=noninteractive bash ./install.sh
 
 CMD ["sleep", "infinity"]
