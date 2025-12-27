@@ -4,12 +4,22 @@ This repository contains all configuration files, scripts, and automation helper
 
 ## Repository Structure
 
-- **files/**: All core dotfiles to be installed in your home directory (e.g., zshrc, bashrc, gitconfig, etc.).
-- **fonts/**: Developer fonts organized by subfolder (one folder per font family) and a generic installation script that installs all .otf fonts from every subdirectory.
-- **packages/**: OS-aware installation scripts for development tools, programming languages, Docker, Kubernetes, and more. Each script handles installation for multiple distributions and package managers.
+- **files/**: All core dotfiles to be installed in your home directory (aliases, bashrc, gitconfig, vimrc, zshrc, etc.) and a backup directory for existing configurations.
+- **fonts/**: Developer fonts with FiraMonoNerdFont and a generic installation script that installs all .otf fonts from every subdirectory.
+- **packages/**: OS-aware installation scripts for development tools and programming languages:
+  - `devtools.sh`: General development tools
+  - `docker.sh`: Docker and Docker Compose
+  - `go.sh`: Go programming language
+  - `java.sh`: Java development environment
+  - `kubernetes.sh`: Kubernetes tools (kubectl, helm, etc.)
+  - `node.sh`: Node.js and npm
+  - `python.sh`: Python development environment
 - **scripts/**: Main automation scripts:
   - `install.sh`: Installs dotfiles, all packages, and fonts. Orchestrates the setup process and provides clear logs.
   - `restore_backup.sh`: Restores dotfiles and configs from backup, with safety prompts.
+- **build/**: Docker-based environment setup files:
+  - `Dockerfile.amazon`: Amazon Linux environment
+  - `Dockerfile.ubuntu`: Ubuntu environment  
 
 ## How to Install Everything
 
@@ -32,8 +42,6 @@ This repository contains all configuration files, scripts, and automation helper
    - Install all packages in `packages/` (OS-aware)
    - Install all developer fonts found in subfolders under `fonts/` (add new fonts by creating a new subfolder with .otf files)
    - Log each step with clear output
-
-   > **Note:** The scripts do not use `sudo` internally. If you need to install to system directories, run the script with the necessary privileges.
 
 ## How to Restore Backups
 
