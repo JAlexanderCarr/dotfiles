@@ -1,0 +1,36 @@
+FROM ubuntu:22.04
+
+# Base tooling (root)
+RUN apt-get update -y && \
+    apt-get install -y --no-install-recommends \
+      sudo \
+      ca-certificates \
+      curl \
+      wget \
+      git \
+      bash-completion \
+      pkg-config \
+      gnupg \
+      lsb-release \
+      tar
+
+# Copy repository into the image
+WORKDIR /opt/dotfiles
+COPY . /opt/dotfiles
+
+# Create a non-root user to validate installation
+RUN useradd -ms /bin/bash -G sudo dev && \
+    echo "dev ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/dev && \
+    chmod 440 /etc/sudoers.d/dev && \
+    chown -R dev:dev /opt/dotfiles
+
+USER dev
+ENV HOME=/home/dev
+WORKDIR /opt/dotfiles/scripts
+
+# Install files, fonts, and packages using individual scripts
+RUN cd /opt/dotfiles/files && bash ./install.sh
+RUN cd /opt/dotfiles/fonts && bash ./install.sh
+RUN cd /opt/dotfiles/packages && sudo DEBIAN_FRONTEND=noninteractive bash ./install.sh
+
+CMD ["sleep", "infinity"]

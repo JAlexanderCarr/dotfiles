@@ -1,0 +1,37 @@
+FROM amazonlinux:2
+
+# Base tooling (root)
+RUN yum -y update && \
+    yum -y install \
+      sudo \
+      ca-certificates \
+      curl \
+      wget \
+      git \
+      bash-completion \
+      pkgconfig \
+      gnupg2 \
+      tar && \
+    yum clean all && \
+    rm -rf /var/cache/yum
+
+# Copy repository into the image
+WORKDIR /opt/dotfiles
+COPY . /opt/dotfiles
+
+# Create a non-root user to validate installation
+RUN useradd -ms /bin/bash -G wheel dev && \
+    echo "dev ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/dev && \
+    chmod 440 /etc/sudoers.d/dev && \
+    chown -R dev:dev /opt/dotfiles
+
+USER dev
+ENV HOME=/home/dev
+WORKDIR /opt/dotfiles/scripts
+
+# Install files, fonts, and packages using individual scripts
+RUN cd /opt/dotfiles/files && bash ./install.sh
+RUN cd /opt/dotfiles/fonts && bash ./install.sh
+RUN cd /opt/dotfiles/packages && sudo bash ./install.sh
+
+CMD ["sleep", "infinity"]

@@ -4,7 +4,7 @@ set -euo pipefail
 : "${OS:=$(uname -s | tr '[:upper:]' '[:lower:]')}"
 : "${ARCH:=$(uname -m)}"
 
-GO_VERSION="1.25.0"
+GO_VERSION="1.25.3"
 GO_OS="$OS"
 GO_ARCH="$ARCH"
 if [[ "$GO_OS" == "darwin" ]]; then
@@ -25,7 +25,7 @@ else
 fi
 
 if [[ "$OS" == "darwin" ]]; then
-    brew install wget tar
+    @echo "wget and tar are already installed on macOS"
 elif [[ -f /etc/debian_version ]]; then
     apt-get update -y
     apt-get install -y wget tar
@@ -41,7 +41,7 @@ else
 fi
 
 rm -rf /usr/local/go*
-mkdir /tmp/golang
+mkdir -p /tmp/golang
 
 # Download and install
 wget --quiet https://go.dev/dl/go${GO_VERSION}.${GO_OS}-${GO_ARCH}.tar.gz -P /tmp/golang
