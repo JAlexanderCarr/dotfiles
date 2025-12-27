@@ -45,7 +45,7 @@ if [[ "$install_packages" =~ ^[Yy]$ ]]; then
     if [ ! -d "$PACKAGES_DIR" ]; then
         echo "[ERROR] Directory $PACKAGES_DIR does not exist. Skipping package install."
     else
-        cd "$PACKAGES_DIR" && bash "install.sh"
+        cd "$PACKAGES_DIR" && sudo bash "install.sh"
     fi
 fi
 

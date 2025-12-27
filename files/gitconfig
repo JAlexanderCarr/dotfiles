@@ -5,9 +5,17 @@
 	signingkey = ~/.ssh/id_github.pub
 [init]
 	defaultBranch = main
+[checkout]
+	defaultRemote = origin
+[pull]
+	rebase = true
+[branch]
+    autosetuprebase = always
 [commit]
 	gpgsign = true
 [gpg]
 	format = ssh
+[core]
+	editor = vim
 [url "ssh://git@github.com/"]
 	insteadOf = https://github.com/

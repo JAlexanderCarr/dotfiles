@@ -28,10 +28,16 @@ elif [[ -f /etc/fedora-release ]]; then
     dnf install -y docker-ce docker-ce-cli containerd.io
     usermod -aG docker $USER
 elif [[ -f /etc/centos-release ]] || [[ -f /etc/redhat-release ]] || [[ -f /etc/system-release ]]; then
-    yum install -y yum-utils
-    yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
-    yum install -y docker-ce docker-ce-cli containerd.io
-    usermod -aG docker $USER
+    # FIXME: Docker CE doesn't support Amazon Linux 2
+    # Skip Docker installation for now to avoid build failures
+    if grep -q "Amazon Linux" /etc/system-release; then
+        echo "[INFO] Skipping Docker installation on Amazon Linux (not supported by Docker CE)"
+    else
+        yum install -y yum-utils
+        yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
+        yum install -y docker-ce docker-ce-cli containerd.io
+        usermod -aG docker $USER
+    fi
 elif [[ -f /etc/arch-release ]]; then
     pacman -Sy --noconfirm docker
     usermod -aG docker $USER

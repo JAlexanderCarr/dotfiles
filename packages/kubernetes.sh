@@ -48,7 +48,7 @@ else
     KUBECTL_VERSION="$(curl -L -s https://dl.k8s.io/release/stable.txt)"
     curl -LO "https://dl.k8s.io/release/$KUBECTL_VERSION/bin/linux/$KUBECTL_ARCH/kubectl"
     install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
-    kubectl completion bash | tee /etc/bash_completion.d/kubectl > /dev/null
+    /usr/local/bin/kubectl completion bash | tee /etc/bash_completion.d/kubectl > /dev/null
     rm -f kubectl
 
     rm -rf /opt/kubectx
