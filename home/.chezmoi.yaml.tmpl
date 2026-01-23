@@ -1,0 +1,35 @@
+# chezmoi configuration file (YAML format)
+# This template is used during `chezmoi init` to prompt for user-specific values
+
+{{- $name := promptStringOnce . "name" "What is your full name" -}}
+{{- $email := promptStringOnce . "email" "What is your email address" -}}
+{{- $githubUsername := promptStringOnce . "githubUsername" "What is your GitHub username" -}}
+{{- $sshSigningKey := promptStringOnce . "sshSigningKey" "Path to SSH signing key (e.g., ~/.ssh/id_github.pub)" "~/.ssh/id_github.pub" -}}
+{{- $profile := promptChoiceOnce . "profile" "Select profile" (list "personal" "work") -}}
+
+{{- /* Package installation prompts */ -}}
+{{- $installDevtools := promptBoolOnce . "packages.devtools" "Install development tools (git, make, etc.)" true -}}
+{{- $installDocker := promptBoolOnce . "packages.docker" "Install Docker" false -}}
+{{- $installGo := promptBoolOnce . "packages.go" "Install Go" false -}}
+{{- $installKubernetes := promptBoolOnce . "packages.kubernetes" "Install Kubernetes tools (kubectl, kind, kubectx)" false -}}
+{{- $installNode := promptBoolOnce . "packages.node" "Install Node.js (via NVM)" false -}}
+{{- $installPython := promptBoolOnce . "packages.python" "Install Python" false -}}
+{{- $installJava := promptBoolOnce . "packages.java" "Install Java (OpenJDK)" false -}}
+{{- $installFonts := promptBoolOnce . "packages.fonts" "Install Nerd Fonts" true -}}
+
+data:
+  name: {{ $name | quote }}
+  email: {{ $email | quote }}
+  githubUsername: {{ $githubUsername | quote }}
+  sshSigningKey: {{ $sshSigningKey | quote }}
+  profile: {{ $profile | quote }}
+  packages:
+    devtools: {{ $installDevtools }}
+    docker: {{ $installDocker }}
+    go: {{ $installGo }}
+    kubernetes: {{ $installKubernetes }}
+    node: {{ $installNode }}
+    python: {{ $installPython }}
+    java: {{ $installJava }}
+    fonts: {{ $installFonts }}
+

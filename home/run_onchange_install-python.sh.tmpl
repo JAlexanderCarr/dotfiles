@@ -1,0 +1,76 @@
+#!/bin/bash
+# chezmoi:template:left-delimiter="{{" right-delimiter="}}"
+# Install Python - optional, controlled by chezmoi config
+
+{{- if not .packages.python }}
+echo "[PYTHON] Python installation skipped (disabled in config)"
+exit 0
+{{- end }}
+
+set -euo pipefail
+
+OS="$(uname -s | tr '[:upper:]' '[:lower:]')"
+ARCH="$(uname -m)"
+
+PYTHON_VERSION="3.12.2"
+
+echo "[PYTHON] Installing Python ${PYTHON_VERSION}..."
+
+if [[ "$OS" == "darwin" ]]; then
+    # macOS: Prefer Homebrew for Python
+    if ! command -v brew >/dev/null; then
+        echo "[PYTHON] Homebrew not found. Installing..."
+        /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+    fi
+    brew install python
+elif [[ -f /etc/debian_version ]]; then
+    # Prevent interactive prompts for tzdata and other packages
+    export DEBIAN_FRONTEND=noninteractive
+    export TZ=Etc/UTC
+    sudo ln -snf /usr/share/zoneinfo/$TZ /etc/localtime
+    echo $TZ | sudo tee /etc/timezone > /dev/null
+    
+    sudo apt-get update -y
+    sudo apt-get install -y build-essential libssl-dev zlib1g-dev libncurses5-dev \
+        libncursesw5-dev libreadline-dev libsqlite3-dev libgdbm-dev libdb5.3-dev \
+        libbz2-dev libexpat1-dev liblzma-dev tk-dev wget curl
+    cd /tmp
+    wget "https://www.python.org/ftp/python/$PYTHON_VERSION/Python-$PYTHON_VERSION.tgz"
+    tar -xf "Python-$PYTHON_VERSION.tgz"
+    cd "Python-$PYTHON_VERSION"
+    ./configure --enable-optimizations
+    make -j$(nproc)
+    sudo make altinstall
+    cd ..
+    sudo rm -rf "Python-$PYTHON_VERSION"*
+elif [[ -f /etc/fedora-release ]]; then
+    sudo dnf install -y gcc openssl-devel bzip2-devel libffi-devel zlib-devel wget make
+    cd /tmp
+    wget "https://www.python.org/ftp/python/$PYTHON_VERSION/Python-$PYTHON_VERSION.tgz"
+    tar -xf "Python-$PYTHON_VERSION.tgz"
+    cd "Python-$PYTHON_VERSION"
+    ./configure --enable-optimizations
+    make -j$(nproc)
+    sudo make altinstall
+    cd ..
+    sudo rm -rf "Python-$PYTHON_VERSION"*
+elif [[ -f /etc/centos-release ]] || [[ -f /etc/redhat-release ]] || [[ -f /etc/system-release ]]; then
+    sudo yum groupinstall -y "Development Tools"
+    sudo yum install -y openssl-devel bzip2-devel libffi-devel zlib-devel wget make
+    cd /tmp
+    wget "https://www.python.org/ftp/python/$PYTHON_VERSION/Python-$PYTHON_VERSION.tgz"
+    tar -xf "Python-$PYTHON_VERSION.tgz"
+    cd "Python-$PYTHON_VERSION"
+    ./configure --enable-optimizations
+    make -j$(nproc)
+    sudo make altinstall
+    cd ..
+    sudo rm -rf "Python-$PYTHON_VERSION"*
+elif [[ -f /etc/arch-release ]]; then
+    sudo pacman -Sy --noconfirm python
+else
+    echo "[PYTHON] Unsupported OS for Python installation."
+    exit 1
+fi
+
+echo "[PYTHON] Python installation complete!"

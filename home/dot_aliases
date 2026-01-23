@@ -38,3 +38,6 @@ alias kx='kubectx'
 alias kgp='kubectl get pods'
 alias kgs='kubectl get services'
 alias kgd='kubectl get deployments'
+
+# chezmoi alias
+alias cm='chezmoi'

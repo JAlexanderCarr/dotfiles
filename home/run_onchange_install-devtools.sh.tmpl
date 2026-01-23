@@ -1,0 +1,39 @@
+#!/bin/bash
+# chezmoi:template:left-delimiter="{{" right-delimiter="}}"
+# Install development tools - optional, controlled by chezmoi config
+
+{{- if not .packages.devtools }}
+echo "[DEVTOOLS] Development tools installation skipped (disabled in config)"
+exit 0
+{{- end }}
+
+set -euo pipefail
+
+OS="$(uname -s | tr '[:upper:]' '[:lower:]')"
+ARCH="$(uname -m)"
+
+echo "[DEVTOOLS] Installing development tools..."
+
+if [[ "$OS" == "darwin" ]]; then
+    # macOS
+    if ! command -v brew >/dev/null; then
+        echo "[DEVTOOLS] Homebrew not found. Installing..."
+        /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+    fi
+    brew install git gnu-tar gnu-sed bash-completion pkg-config
+elif [[ -f /etc/debian_version ]]; then
+    sudo apt-get update -y
+    sudo apt-get install -y build-essential libssl-dev make git g++ curl bash-completion pkg-config
+elif [[ -f /etc/fedora-release ]]; then
+    sudo dnf install -y @development-tools openssl-devel make git gcc-c++ curl bash-completion pkgconf-pkg-config
+elif [[ -f /etc/centos-release ]] || [[ -f /etc/redhat-release ]] || [[ -f /etc/system-release ]]; then
+    sudo yum groupinstall -y "Development Tools"
+    sudo yum install -y openssl-devel make git gcc-c++ curl bash-completion pkgconfig
+elif [[ -f /etc/arch-release ]]; then
+    sudo pacman -Sy --noconfirm base-devel openssl make git gcc curl bash-completion pkgconf
+else
+    echo "[DEVTOOLS] Unsupported OS for devtools installation."
+    exit 1
+fi
+
+echo "[DEVTOOLS] Development tools installation complete!"

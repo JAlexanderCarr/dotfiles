@@ -1,0 +1,54 @@
+#!/bin/bash
+# chezmoi:template:left-delimiter="{{" right-delimiter="}}"
+# Install fonts - runs once per machine
+
+{{- if not .packages.fonts }}
+echo "[FONTS] Font installation skipped (disabled in config)"
+exit 0
+{{- end }}
+
+set -euo pipefail
+
+
+OS="$(uname -s | tr '[:upper:]' '[:lower:]')"
+# Use chezmoi's environment variable instead of calling chezmoi (avoids lock conflict)
+CHEZMOI_SOURCE="${CHEZMOI_SOURCE_DIR:-$HOME/.local/share/chezmoi}"
+FONT_SOURCE="$CHEZMOI_SOURCE/fonts"
+
+echo "[FONTS] Installing Nerd Fonts..."
+
+if [[ "$OS" == "darwin" ]]; then
+    # macOS: Copy fonts to ~/Library/Fonts
+    FONT_DEST="$HOME/Library/Fonts"
+    mkdir -p "$FONT_DEST"
+    for fontfile in "$FONT_SOURCE"/*.otf "$FONT_SOURCE"/*.ttf; do
+        if [[ -f "$fontfile" ]]; then
+            fname="$(basename "$fontfile")"
+            cp -f "$fontfile" "$FONT_DEST/$fname"
+            echo "[FONTS] Installed: $fname -> $FONT_DEST/"
+        fi
+    done
+    echo "[FONTS] macOS fonts installed to $FONT_DEST"
+elif [[ "$OS" == "linux" ]]; then
+    # Linux: Copy fonts system-wide to /usr/share/fonts
+    FONT_DEST="/usr/share/fonts"
+    sudo mkdir -p "$FONT_DEST"
+    for fontfile in "$FONT_SOURCE"/*.otf "$FONT_SOURCE"/*.ttf; do
+        if [[ -f "$fontfile" ]]; then
+            fname="$(basename "$fontfile")"
+            sudo cp -f "$fontfile" "$FONT_DEST/$fname"
+            echo "[FONTS] Installed: $fname -> $FONT_DEST/"
+        fi
+    done
+    # Refresh font cache
+    if command -v fc-cache &>/dev/null; then
+        echo "[FONTS] Refreshing font cache..."
+        sudo fc-cache -fv "$FONT_DEST" 2>/dev/null || true
+    fi
+    echo "[FONTS] Linux fonts installed to $FONT_DEST"
+else
+    echo "[FONTS] Unsupported OS: $OS"
+    exit 1
+fi
+
+echo "[FONTS] Font installation complete!"

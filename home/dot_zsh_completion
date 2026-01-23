@@ -1,0 +1,11 @@
+# ZSH completions
+
+# Kubernetes completions
+if command -v kubectl &>/dev/null; then
+    source <(kubectl completion zsh)
+    alias k='kubectl'
+    compdef k=kubectl
+fi
+
+# Node/NVM completions
+[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"

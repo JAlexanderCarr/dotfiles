@@ -1,0 +1,30 @@
+# chezmoi ignore file
+# Files and patterns listed here will not be managed by chezmoi
+
+# README and documentation
+README.md
+LICENSE
+
+# Build directory (for container testing)
+build/
+
+# Font files are installed via run_once script, not directly by chezmoi
+# This prevents chezmoi from trying to manage them in the system font directory
+fonts/
+
+# Editor and IDE files
+*.swp
+*.swo
+*~
+.idea/
+.vscode/
+*.code-workspace
+
+# Git
+.git/
+.gitignore
+
+# Temporary files
+*.tmp
+*.temp
+*.bak

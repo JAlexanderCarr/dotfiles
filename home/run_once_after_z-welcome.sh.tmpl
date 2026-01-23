@@ -1,0 +1,43 @@
+#!/bin/bash
+# chezmoi:template:left-delimiter="{{" right-delimiter="}}"
+# Welcome message and setup verification - runs once on first apply
+
+echo "============================================="
+echo "  chezmoi dotfiles installation complete!"
+echo "============================================="
+echo ""
+echo "Profile: {{ .profile }}"
+echo "User: {{ .name }} <{{ .email }}>"
+echo "GitHub: {{ .githubUsername }}"
+echo ""
+echo "Installed packages:"
+{{- if .packages.devtools }}
+echo "  ✓ Development tools"
+{{- end }}
+{{- if .packages.docker }}
+echo "  ✓ Docker"
+{{- end }}
+{{- if .packages.go }}
+echo "  ✓ Go"
+{{- end }}
+{{- if .packages.kubernetes }}
+echo "  ✓ Kubernetes tools"
+{{- end }}
+{{- if .packages.node }}
+echo "  ✓ Node.js (NVM)"
+{{- end }}
+{{- if .packages.python }}
+echo "  ✓ Python"
+{{- end }}
+{{- if .packages.java }}
+echo "  ✓ Java"
+{{- end }}
+{{- if .packages.fonts }}
+echo "  ✓ Nerd Fonts"
+{{- end }}
+echo ""
+echo "To update your dotfiles, run: chezmoi update"
+echo "To edit configuration, run: chezmoi edit-config"
+echo "To re-apply, run: chezmoi apply"
+echo ""
+echo "============================================="

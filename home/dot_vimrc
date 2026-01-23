@@ -1,0 +1,41 @@
+" ~/.vimrc: Vim configuration file
+
+" Basic settings
+set nocompatible
+syntax on
+set number
+set relativenumber
+set tabstop=4
+set shiftwidth=4
+set expandtab
+set autoindent
+set smartindent
+set hlsearch
+set incsearch
+set ignorecase
+set smartcase
+set showmatch
+set ruler
+set laststatus=2
+set backspace=indent,eol,start
+set encoding=utf-8
+set fileencoding=utf-8
+set cursorline
+set scrolloff=5
+set wildmenu
+set wildmode=longest:full,full
+
+" Enable mouse support
+set mouse=a
+
+" File type detection
+filetype on
+filetype plugin on
+filetype indent on
+
+" Color scheme
+colorscheme desert
+
+" Key mappings
+nnoremap <C-s> :w<CR>
+inoremap <C-s> <Esc>:w<CR>a

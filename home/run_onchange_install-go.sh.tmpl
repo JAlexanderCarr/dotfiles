@@ -1,0 +1,67 @@
+#!/bin/bash
+# chezmoi:template:left-delimiter="{{" right-delimiter="}}"
+# Install Go - optional, controlled by chezmoi config
+
+{{- if not .packages.go }}
+echo "[GO] Go installation skipped (disabled in config)"
+exit 0
+{{- end }}
+
+set -euo pipefail
+
+OS="$(uname -s | tr '[:upper:]' '[:lower:]')"
+ARCH="$(uname -m)"
+
+GO_VERSION="1.22.5"
+
+# Normalize OS and ARCH for Go download
+GO_OS="$OS"
+GO_ARCH="$ARCH"
+
+if [[ "$GO_ARCH" == "x86_64" ]]; then
+    GO_ARCH="amd64"
+elif [[ "$GO_ARCH" == "arm64" || "$GO_ARCH" == "aarch64" ]]; then
+    GO_ARCH="arm64"
+else
+    echo "[GO] Unsupported architecture: $GO_ARCH"
+    exit 1
+fi
+
+echo "[GO] Installing Go ${GO_VERSION}..."
+
+if [[ "$OS" == "darwin" ]]; then
+    if ! command -v brew >/dev/null; then
+        echo "[GO] Homebrew not found. Installing..."
+        /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+    fi
+    brew install go
+else
+    # Linux: Install from source
+    if [[ -f /etc/debian_version ]]; then
+        sudo apt-get update -y
+        sudo apt-get install -y wget tar
+    elif [[ -f /etc/fedora-release ]]; then
+        sudo dnf install -y wget tar
+    elif [[ -f /etc/centos-release ]] || [[ -f /etc/redhat-release ]] || [[ -f /etc/system-release ]]; then
+        sudo yum install -y wget tar
+    elif [[ -f /etc/arch-release ]]; then
+        sudo pacman -Sy --noconfirm wget tar
+    else
+        echo "[GO] Unsupported OS for Go installation."
+        exit 1
+    fi
+
+    sudo rm -rf /usr/local/go*
+    mkdir -p /tmp/golang
+
+    # Download and install
+    wget --quiet "https://go.dev/dl/go${GO_VERSION}.${GO_OS}-${GO_ARCH}.tar.gz" -P /tmp/golang
+    sudo tar -C /usr/local -xzf "/tmp/golang/go${GO_VERSION}.${GO_OS}-${GO_ARCH}.tar.gz"
+    sudo mv /usr/local/go "/usr/local/go${GO_VERSION}"
+    sudo ln -sf "/usr/local/go${GO_VERSION}/bin/go" /usr/local/bin/go
+    
+    rm -rf /tmp/golang
+fi
+
+echo "[GO] Go installation complete!"
+go version || echo "[GO] Note: You may need to restart your shell to use Go"

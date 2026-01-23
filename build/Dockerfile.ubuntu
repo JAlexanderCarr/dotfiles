@@ -1,5 +1,8 @@
 FROM ubuntu:22.04
 
+# Prevent interactive prompts during package installation
+ENV DEBIAN_FRONTEND=noninteractive
+
 # Base tooling (root)
 RUN apt-get update -y && \
     apt-get install -y --no-install-recommends \
@@ -12,29 +15,22 @@ RUN apt-get update -y && \
       pkg-config \
       gnupg \
       lsb-release \
-      tar
+      tar \
+      make \
+      unzip \
+      fontconfig && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
 
-# Copy repository into the image
-WORKDIR /opt/dotfiles
-COPY . /opt/dotfiles
-
-# Create a non-root user to validate installation
+# Create a non-root user with sudo access
 RUN useradd -ms /bin/bash -G sudo dev && \
     echo "dev ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/dev && \
-    chmod 440 /etc/sudoers.d/dev && \
-    chown -R dev:dev /opt/dotfiles
-
-WORKDIR /opt/dotfiles/scripts
-
-# Install packages using individual scripts (as root)
-RUN cd /opt/dotfiles/packages && DEBIAN_FRONTEND=noninteractive bash ./install.sh
+    echo "Defaults !requiretty" >> /etc/sudoers.d/dev && \
+    chmod 440 /etc/sudoers.d/dev
 
 # Switch to non-root user
 USER dev
 ENV HOME=/home/dev
+WORKDIR /home/dev
 
-# Install files and fonts using individual scripts (as non-root)
-RUN cd /opt/dotfiles/files && bash ./install.sh
-RUN cd /opt/dotfiles/fonts && bash ./install.sh
-
-CMD ["sleep", "infinity"]
+CMD ["bash"]
