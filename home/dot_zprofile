@@ -1,0 +1,6 @@
+# ~/.zprofile: executed by zsh for login shells
+
+# Source .profile for common environment variables
+if [[ -f ~/.profile ]]; then
+    source ~/.profile
+fi

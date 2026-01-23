@@ -1,0 +1,47 @@
+#!/bin/bash
+# chezmoi:template:left-delimiter="{{" right-delimiter="}}"
+# Install Node.js via NVM - optional, controlled by chezmoi config
+
+{{- if not .packages.node }}
+echo "[NODE] Node.js installation skipped (disabled in config)"
+exit 0
+{{- end }}
+
+set -euo pipefail
+
+OS="$(uname -s | tr '[:upper:]' '[:lower:]')"
+ARCH="$(uname -m)"
+
+NVM_VERSION="0.39.3"
+
+echo "[NODE] Installing Node.js via NVM..."
+
+if [[ "$OS" == "darwin" ]]; then
+    if ! command -v brew >/dev/null; then
+        echo "[NODE] Homebrew not found. Installing..."
+        /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+    fi
+    brew install curl
+elif [[ -f /etc/debian_version ]]; then
+    sudo apt-get update -y
+    sudo apt-get install -y curl build-essential
+elif [[ -f /etc/fedora-release ]]; then
+    sudo dnf install -y curl gcc-c++ make
+elif [[ -f /etc/centos-release ]] || [[ -f /etc/redhat-release ]] || [[ -f /etc/system-release ]]; then
+    sudo yum install -y curl gcc-c++ make
+elif [[ -f /etc/arch-release ]]; then
+    sudo pacman -Sy --noconfirm curl base-devel
+else
+    echo "[NODE] Unsupported OS for Node.js dependencies."
+    exit 1
+fi
+
+# Install NVM
+echo "[NODE] Installing NVM ${NVM_VERSION}..."
+
+# Use script method instead of git clone to avoid SSH issues in containers
+export METHOD="script"
+curl -o- "https://raw.githubusercontent.com/nvm-sh/nvm/v$NVM_VERSION/install.sh" | bash
+
+echo "[NODE] NVM installation complete!"
+echo "[NODE] Please restart your shell and run 'nvm install --lts' to install Node.js"

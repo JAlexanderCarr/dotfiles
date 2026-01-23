@@ -11,31 +11,22 @@ RUN yum -y update && \
       bash-completion \
       pkgconfig \
       gnupg2 \
-      tar && \
-    yum clean all && \
-    rm -rf /var/cache/yum
+      tar \
+      make \
+      unzip \
+      fontconfig && \
+    yum clean all
 
-# Copy repository into the image
-WORKDIR /opt/dotfiles
-COPY . /opt/dotfiles
-
-# Create a non-root user to validate installation
+# Create a non-root user with sudo access
+# Amazon Linux uses wheel group for sudo
 RUN useradd -ms /bin/bash -G wheel dev && \
     echo "dev ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/dev && \
-    chmod 440 /etc/sudoers.d/dev && \
-    chown -R dev:dev /opt/dotfiles
-
-WORKDIR /opt/dotfiles/scripts
-
-# Install packages using individual scripts (as root)
-RUN cd /opt/dotfiles/packages && bash ./install.sh
+    echo "Defaults !requiretty" >> /etc/sudoers.d/dev && \
+    chmod 440 /etc/sudoers.d/dev
 
 # Switch to non-root user
 USER dev
 ENV HOME=/home/dev
+WORKDIR /home/dev
 
-# Install files and fonts using individual scripts (as non-root)
-RUN cd /opt/dotfiles/files && bash ./install.sh
-RUN cd /opt/dotfiles/fonts && bash ./install.sh
-
-CMD ["sleep", "infinity"]
+CMD ["bash"]

@@ -1,0 +1,57 @@
+#!/bin/bash
+# chezmoi:template:left-delimiter="{{" right-delimiter="}}"
+# Install Docker - optional, controlled by chezmoi config
+
+{{- if not .packages.docker }}
+echo "[DOCKER] Docker installation skipped (disabled in config)"
+exit 0
+{{- end }}
+
+set -euo pipefail
+
+OS="$(uname -s | tr '[:upper:]' '[:lower:]')"
+ARCH="$(uname -m)"
+USER="$(id -un)"
+
+echo "[DOCKER] Installing Docker..."
+
+if [[ "$OS" == "darwin" ]]; then
+    if ! command -v brew >/dev/null; then
+        echo "[DOCKER] Homebrew not found. Installing..."
+        /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+    fi
+    brew install --cask docker
+    echo "[DOCKER] Please launch Docker Desktop manually for the first time."
+elif [[ -f /etc/debian_version ]]; then
+    sudo apt-get update -y
+    sudo apt-get install -y ca-certificates curl gnupg lsb-release
+    sudo mkdir -m 0755 -p /etc/apt/keyrings
+    curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor --yes -o /etc/apt/keyrings/docker.gpg
+    echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+    sudo apt-get update -y
+    sudo apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+    sudo usermod -aG docker $USER
+elif [[ -f /etc/fedora-release ]]; then
+    sudo dnf install -y dnf-plugins-core
+    sudo dnf config-manager --add-repo https://download.docker.com/linux/fedora/docker-ce.repo
+    sudo dnf install -y docker-ce docker-ce-cli containerd.io
+    sudo usermod -aG docker $USER
+elif [[ -f /etc/centos-release ]] || [[ -f /etc/redhat-release ]] || [[ -f /etc/system-release ]]; then
+    if grep -q "Amazon Linux" /etc/system-release 2>/dev/null; then
+        echo "[DOCKER] Skipping Docker installation on Amazon Linux (not supported by Docker CE)"
+        exit 0
+    else
+        sudo yum install -y yum-utils
+        sudo yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
+        sudo yum install -y docker-ce docker-ce-cli containerd.io
+        sudo usermod -aG docker $USER
+    fi
+elif [[ -f /etc/arch-release ]]; then
+    sudo pacman -Sy --noconfirm docker
+    sudo usermod -aG docker $USER
+else
+    echo "[DOCKER] Unsupported OS for Docker installation."
+    exit 1
+fi
+
+echo "[DOCKER] Docker installation complete!"

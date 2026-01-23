@@ -1,8 +1,8 @@
 [user]
-	name = Alexander Carr
-	email = jalexandercarr@gmail.com
-	username = JAlexanderCarr
-	signingkey = ~/.ssh/id_github.pub
+	name = {{ .name }}
+	email = {{ .email }}
+	username = {{ .githubUsername }}
+	signingkey = {{ .sshSigningKey }}
 [init]
 	defaultBranch = main
 [checkout]
