@@ -104,10 +104,40 @@ jobs:
     needs: [test-ubuntu, test-amazon]
     if: always()
     steps:
-    - name: Test Results
+    - name: Print and Summarize Test Results
       run: |
+        # Determine status icons
+        if [ "${{ needs.test-ubuntu.result }}" = "success" ]; then
+          UBUNTU_ICON="✅"
+        else
+          UBUNTU_ICON="❌"
+        fi
+        if [ "${{ needs.test-amazon.result }}" = "success" ]; then
+          AMAZON_ICON="✅"
+        else
+          AMAZON_ICON="❌"
+        fi
+
+        # Print to console
+        echo "================================"
+        echo "        TEST RESULTS"
+        echo "================================"
+        echo ""
+        echo "Ubuntu:  $UBUNTU_ICON ${{ needs.test-ubuntu.result }}"
+        echo "Amazon:  $AMAZON_ICON ${{ needs.test-amazon.result }}"
+        echo ""
+        echo "================================"
+
+        # Write to GitHub Step Summary
         echo "## Test Results" >> $GITHUB_STEP_SUMMARY
-        echo "| Container | Test |" >> $GITHUB_STEP_SUMMARY
-        echo "|-----------|------|" >> $GITHUB_STEP_SUMMARY
-        echo "| Ubuntu | ${{ needs.test-ubuntu.result }} |" >> $GITHUB_STEP_SUMMARY
-        echo "| Amazon | ${{ needs.test-amazon.result }} |" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "| Container | Status | Result |" >> $GITHUB_STEP_SUMMARY
+        echo "|-----------|--------|--------|" >> $GITHUB_STEP_SUMMARY
+        echo "| Ubuntu | $UBUNTU_ICON | ${{ needs.test-ubuntu.result }} |" >> $GITHUB_STEP_SUMMARY
+        echo "| Amazon | $AMAZON_ICON | ${{ needs.test-amazon.result }} |" >> $GITHUB_STEP_SUMMARY
+
+    - name: Check for failures
+      if: needs.test-ubuntu.result != 'success' || needs.test-amazon.result != 'success'
+      run: |
+        echo "One or more tests failed!"
+        exit 1
