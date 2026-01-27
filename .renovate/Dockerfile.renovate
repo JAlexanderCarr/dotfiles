@@ -1,0 +1,4 @@
+# This Dockerfile is NOT meant to be built.
+# It exists solely so Renovate can track its own updates and notify via PR.
+# renovate: datasource=docker depName=renovate/renovate
+FROM renovate/renovate:39
