@@ -103,6 +103,18 @@ Core development tools:
 
 - Custom `/etc/motd` displaying system info (OS, memory, disk, IP, uptime)
 
+### AI Agent Configs (optional)
+
+| File | Description |
+|------|-------------|
+| `.config/aide/AI_PREFERENCES.md` | Shared global AI preferences (canonical) |
+| `.claude/CLAUDE.md` | Global Claude Code instructions (symlink → AI_PREFERENCES.md) |
+| `.codex/AGENTS.md` | Global OpenAI Codex instructions (symlink → AI_PREFERENCES.md) |
+| `.config/aide/ai-templates/` | Project template library for `aide` |
+| `.local/bin/aide` | AI Development Environment CLI |
+
+See [docs/ai-agents.md](docs/ai-agents.md) for full documentation.
+
 ## Updating
 
 Pull the latest changes from the remote repo and apply them:

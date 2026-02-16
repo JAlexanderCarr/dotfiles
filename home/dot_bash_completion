@@ -43,11 +43,23 @@ if command -v kubectl >/dev/null 2>&1; then
 fi
 
 if command -v kubens >/dev/null 2>&1; then
-    complete -C kubens kn
+    if [ -f /opt/kubectx/completion/kubens.bash ]; then
+        . /opt/kubectx/completion/kubens.bash
+    elif [ -f /usr/share/bash-completion/completions/kubens ]; then
+        . /usr/share/bash-completion/completions/kubens
+    fi
+    # Apply to alias
+    complete -F _kube_namespaces kn 2>/dev/null || true
 fi
 
 if command -v kubectx >/dev/null 2>&1; then
-    complete -C kubectx kx
+    if [ -f /opt/kubectx/completion/kubectx.bash ]; then
+        . /opt/kubectx/completion/kubectx.bash
+    elif [ -f /usr/share/bash-completion/completions/kubectx ]; then
+        . /usr/share/bash-completion/completions/kubectx
+    fi
+    # Apply to alias
+    complete -F _kube_contexts kx 2>/dev/null || true
 fi
 
 # --- NVM ---

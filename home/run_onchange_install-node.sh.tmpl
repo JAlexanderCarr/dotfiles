@@ -61,6 +61,16 @@ with_spinner "Installing nvm ${NVM_VERSION}" bash -c "curl -fsSL https://raw.git
 # Source NVM for this script
 [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh" >> "$CHEZMOI_LOG_FILE" 2>&1
 
+# Clean up old Node.js versions BEFORE installing new one
+log_silent "Cleaning up old Node.js versions"
+for version in $(nvm ls --no-colors 2>/dev/null | grep -oE 'v[0-9]+\.[0-9]+\.[0-9]+' | sed 's/^v//' | sort -u); do
+    # Don't try to uninstall if it matches what we're about to install
+    if [[ "$version" != "$NODE_VERSION" ]] && [[ "$version" != "$(echo $NODE_VERSION | grep -oE '^[0-9]+')"* ]]; then
+        log_silent "Removing old Node.js version: $version"
+        nvm uninstall "$version" >> "$CHEZMOI_LOG_FILE" 2>&1 || true
+    fi
+done
+
 # Install Node.js (NVM handles this idempotently)
 log_silent "Installing Node ${NODE_VERSION}"
 with_spinner "Installing node ${NODE_VERSION}" nvm install $NODE_VERSION
@@ -69,14 +79,8 @@ with_spinner "Installing node ${NODE_VERSION}" nvm install $NODE_VERSION
 log_silent "Setting Node ${NODE_VERSION} as default"
 with_spinner "Setting node ${NODE_VERSION} as global" nvm alias default "$NODE_VERSION" >> "$CHEZMOI_LOG_FILE" 2>&1 || true
 
-# Clean up old Node.js versions (keep only the current LTS/specified version)
-log_silent "Cleaning up old Node.js versions"
-CURRENT_VERSION=$(nvm current 2>/dev/null | sed 's/^v//')
-for version in $(nvm ls --no-colors 2>/dev/null | grep -oE 'v[0-9]+\.[0-9]+\.[0-9]+' | sed 's/^v//' | sort -u); do
-    if [[ "$version" != "$CURRENT_VERSION" ]]; then
-        log_silent "Removing old Node.js version: $version"
-        nvm uninstall "$version" >> "$CHEZMOI_LOG_FILE" 2>&1 || true
-    fi
-done
+# Activate the installed version in the current shell (with_spinner runs in a
+# subshell, so nvm install's PATH changes are lost in the parent)
+nvm use "$NODE_VERSION" >> "$CHEZMOI_LOG_FILE" 2>&1 || true
 
 print_done "Node ${NODE_VERSION} installed"

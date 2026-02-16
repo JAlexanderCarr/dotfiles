@@ -94,16 +94,7 @@ export PYENV_ROOT
 export PATH="$PYENV_ROOT/bin:$PATH"
 eval "$(pyenv init -)" >> "$CHEZMOI_LOG_FILE" 2>&1 || true
 
-# Install the specified Python version (pyenv handles this idempotently)
-if pyenv versions --bare 2>/dev/null | grep -q "^${PYTHON_VERSION}$"; then
-    print_skip "Python ${PYTHON_VERSION} already installed"
-else
-    with_spinner "Installing python ${PYTHON_VERSION}" pyenv install "$PYTHON_VERSION"
-fi
-
-# Set global version
-with_spinner "Setting python ${PYTHON_VERSION} as global" pyenv global "$PYTHON_VERSION"
-# Clean up old Python versions (keep only the current version)
+# Clean up old Python versions BEFORE installing new one
 log_silent "Cleaning up old Python versions"
 for version in $(pyenv versions --bare 2>/dev/null | grep -v '/'); do
     if [[ "$version" != "$PYTHON_VERSION" ]]; then
@@ -111,5 +102,15 @@ for version in $(pyenv versions --bare 2>/dev/null | grep -v '/'); do
         pyenv uninstall -f "$version" >> "$CHEZMOI_LOG_FILE" 2>&1 || true
     fi
 done
+
+# Install the specified Python version (pyenv handles this idempotently)
+if pyenv versions --bare 2>/dev/null | grep -q "^${PYTHON_VERSION}$"; then
+    print_done "Python ${PYTHON_VERSION} already installed"
+else
+    with_spinner "Installing python ${PYTHON_VERSION}" pyenv install "$PYTHON_VERSION"
+fi
+
+# Set global version
+with_spinner "Setting python ${PYTHON_VERSION} as global" pyenv global "$PYTHON_VERSION"
 
 print_done "Python ${PYTHON_VERSION} installed"

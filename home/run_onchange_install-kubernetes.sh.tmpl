@@ -44,12 +44,34 @@ print_header "Kubernetes Tools"
 enable_git_https_override 2>/dev/null || true
 
 install_k8s_macos() {
-    if ! command -v brew >/dev/null; then
-        with_spinner "Installing Homebrew" /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-    fi
-    with_spinner "Installing kind" brew install --quiet kind
-    with_spinner "Installing kubectl" brew install --quiet kubectl
-    with_spinner "Installing kubectx/kubens" brew install --quiet kubectx
+    # Clean up and install kind (in-place update)
+    log_silent "Removing old kind binary if present"
+    sudo rm -f /usr/local/bin/kind >> "$CHEZMOI_LOG_FILE" 2>&1 || true
+
+    log_silent "Downloading kind ${KIND_VERSION}"
+    curl -fsSL -o /tmp/kind "https://kind.sigs.k8s.io/dl/v${KIND_VERSION}/kind-darwin-$ARCH_STD" >> "$CHEZMOI_LOG_FILE" 2>&1
+    chmod +x /tmp/kind >> "$CHEZMOI_LOG_FILE" 2>&1
+    with_spinner "Installing kind ${KIND_VERSION}" sudo mv /tmp/kind /usr/local/bin/kind
+
+    # Clean up and install kubectl (in-place update)
+    log_silent "Removing old kubectl binary if present"
+    sudo rm -f /usr/local/bin/kubectl >> "$CHEZMOI_LOG_FILE" 2>&1 || true
+
+    log_silent "Downloading kubectl ${KUBECTL_VERSION}"
+    curl -fsSL -o /tmp/kubectl "https://dl.k8s.io/release/v${KUBECTL_VERSION}/bin/darwin/$ARCH_STD/kubectl" >> "$CHEZMOI_LOG_FILE" 2>&1
+    with_spinner "Installing kubectl ${KUBECTL_VERSION}" sudo install -o root -g wheel -m 0755 /tmp/kubectl /usr/local/bin/kubectl
+    rm -f /tmp/kubectl >> "$CHEZMOI_LOG_FILE" 2>&1
+
+    # Clean up and install kubectx and kubens (same as Linux)
+    log_silent "Cleaning up old kubectx installation"
+    sudo rm -rf /opt/kubectx >> "$CHEZMOI_LOG_FILE" 2>&1 || true
+    sudo rm -f /usr/local/bin/kubectx /usr/local/bin/kubens >> "$CHEZMOI_LOG_FILE" 2>&1 || true
+    with_spinner "Installing kubectx/kubens" sudo git clone --quiet https://github.com/ahmetb/kubectx.git /opt/kubectx
+
+    # Create symlinks
+    log_silent "Creating kubectx/kubens symlinks"
+    sudo ln -sf /opt/kubectx/kubectx /usr/local/bin/kubectx >> "$CHEZMOI_LOG_FILE" 2>&1
+    sudo ln -sf /opt/kubectx/kubens /usr/local/bin/kubens >> "$CHEZMOI_LOG_FILE" 2>&1
 }
 
 install_k8s_linux() {

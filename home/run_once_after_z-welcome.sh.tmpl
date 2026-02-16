@@ -72,6 +72,11 @@ printf "  ${CLR_GREEN}✓${CLR_RESET} Custom MOTD\n"
 {{- else }}
 printf "  ${CLR_DIM}○ Custom MOTD${CLR_RESET}\n"
 {{- end }}
+{{- if .addons.ai }}
+printf "  ${CLR_GREEN}✓${CLR_RESET} AI Agent Configs\n"
+{{- else }}
+printf "  ${CLR_DIM}○ AI Agent Configs${CLR_RESET}\n"
+{{- end }}
 printf "\n"
 printf "${CLR_BOLD}${CLR_BLUE}▸${CLR_RESET} ${CLR_BOLD}Quick Commands${CLR_RESET}\n"
 printf "  ${CLR_DIM}Update dotfiles:${CLR_RESET}    chezmoi update\n"

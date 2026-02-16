@@ -1,13 +1,6 @@
 # ~/.profile - executed by the command interpreter for login shells
 # Not read by bash(1) if ~/.bash_profile or ~/.bash_login exists.
 
-# Source .bashrc for interactive bash login shells
-if [ -n "$BASH_VERSION" ]; then
-    if [ -f "$HOME/.bashrc" ]; then
-        . "$HOME/.bashrc"
-    fi
-fi
-
 # Add user bin directories to PATH
 if [ -d "$HOME/bin" ]; then
     PATH="$HOME/bin:$PATH"
@@ -27,7 +20,6 @@ fi
 
 # NVM (Node Version Manager)
 export NVM_DIR="$HOME/.nvm"
-[ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
 
 # goenv (Go version manager)
 export GOENV_ROOT="$HOME/.goenv"

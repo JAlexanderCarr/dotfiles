@@ -28,3 +28,12 @@ fonts/
 *.tmp
 *.temp
 *.bak
+
+# AI agent configs (conditional)
+{{ if not .addons.ai }}
+.claude/
+.codex/
+.config/aide/AI_PREFERENCES.md
+.config/aide/ai-templates/
+.local/bin/aide
+{{ end }}
