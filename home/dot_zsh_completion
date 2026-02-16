@@ -4,17 +4,17 @@
 if command -v git &>/dev/null; then
     # Zsh ships with git completions; ensure aliases get completion
     compdef g=git
-    compdef gs='git status'
-    compdef ga='git add'
-    compdef gaa='git add'
-    compdef gam='git add'
-    compdef gc='git commit'
-    compdef gca='git commit'
-    compdef gch='git checkout'
-    compdef gb='git branch'
-    compdef gr='git rebase'
-    compdef grc='git rebase'
-    compdef gra='git rebase'
+    compdef gs=git
+    compdef ga=git
+    compdef gaa=git
+    compdef gam=git
+    compdef gc=git
+    compdef gca=git
+    compdef gch=git
+    compdef gb=git
+    compdef gr=git
+    compdef grc=git
+    compdef gra=git
 fi
 
 # --- Docker ---
@@ -33,11 +33,23 @@ if command -v kubectl &>/dev/null; then
 fi
 
 if command -v kubens &>/dev/null; then
-    compdef kn=kubens
+    if [[ -f /opt/kubectx/completion/kubens.zsh ]]; then
+        source /opt/kubectx/completion/kubens.zsh
+    elif [[ -f /usr/share/zsh/vendor-completions/_kubens ]]; then
+        source /usr/share/zsh/vendor-completions/_kubens
+    fi
+    # Apply to alias
+    compdef _kube_namespaces kn 2>/dev/null || true
 fi
 
 if command -v kubectx &>/dev/null; then
-    compdef kx=kubectx
+    if [[ -f /opt/kubectx/completion/kubectx.zsh ]]; then
+        source /opt/kubectx/completion/kubectx.zsh
+    elif [[ -f /usr/share/zsh/vendor-completions/_kubectx ]]; then
+        source /usr/share/zsh/vendor-completions/_kubectx
+    fi
+    # Apply to alias
+    compdef _kube_contexts kx 2>/dev/null || true
 fi
 
 # --- NVM ---

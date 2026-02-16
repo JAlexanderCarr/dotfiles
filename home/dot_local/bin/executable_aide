@@ -1,0 +1,346 @@
+#!/usr/bin/env bash
+# aide — AI Development Environment helper
+# Manages AI agent instruction files for projects using composable templates.
+# Provides commands to bootstrap, inspect, and manage agent configs.
+set -euo pipefail
+
+VERSION="1.0.0"
+TEMPLATE_DIR="${HOME}/.config/aide/ai-templates"
+
+# --- Colors ---
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[0;33m'
+CYAN='\033[0;36m'
+BLUE='\033[0;34m'
+BOLD='\033[1m'
+DIM='\033[2m'
+NC='\033[0m'
+
+# --- File definitions ---
+# AGENTS.md is the canonical instruction file for all AI agents.
+CANONICAL_FILE="AGENTS.md"
+
+# --- Helpers ---
+
+die() { echo -e "${RED}Error:${NC} $*" >&2; exit 1; }
+warn() { echo -e "${YELLOW}Warning:${NC} $*"; }
+info() { echo -e "${CYAN}$*${NC}"; }
+success() { echo -e "${GREEN}$*${NC}"; }
+
+# Discover available template types from the template directory
+available_types() {
+    if [[ ! -d "$TEMPLATE_DIR" ]]; then
+        return
+    fi
+    find "$TEMPLATE_DIR" -maxdepth 1 -name '*.md' ! -name 'base.md' -exec basename {} .md \; | sort
+}
+
+# Write a file with overwrite confirmation
+write_file() {
+    local path="$1"
+    local content="$2"
+    local force="${3:-false}"
+
+    if [[ -f "$path" || -L "$path" ]] && [[ "$force" != "true" ]]; then
+        read -rp "$(echo -e "  ${YELLOW}${path}${NC} already exists. Overwrite? [y/N] ")" confirm
+        if [[ ! "$confirm" =~ ^[Yy]$ ]]; then
+            echo -e "  ${DIM}Skipped${NC} ${path}"
+            return
+        fi
+    fi
+
+    local dir
+    dir="$(dirname "$path")"
+    [[ -d "$dir" ]] || mkdir -p "$dir"
+
+    # Remove existing symlink or file before writing
+    [[ -L "$path" ]] && rm "$path"
+
+    echo "$content" > "$path"
+    echo -e "  ${GREEN}✓${NC} ${path}"
+}
+
+# --- Commands ---
+
+cmd_help() {
+    echo -e "${BOLD}aide${NC} — AI Development Environment helper"
+    echo ""
+    echo -e "${YELLOW}Usage:${NC}"
+    echo "  aide <command> [options]"
+    echo ""
+    echo -e "${YELLOW}Commands:${NC}"
+    echo "  init project          Create AGENTS.md from base template"
+    echo "  status                Show AI agent file status in current directory"
+    echo "  templates             List available templates"
+    echo "  templates add <name>  Create a new template"
+    echo "  doctor                Verify global AI config is properly installed"
+    echo ""
+    echo -e "${YELLOW}Init Project Options:${NC}"
+    echo "  -n, --name <name>     Project name (default: current directory name)"
+    echo "  -d, --desc <text>     Project description"
+    echo "  -t, --tech <stack>    Tech stack (e.g., 'Go, PostgreSQL, Redis')"
+    echo "  -f, --force           Overwrite existing files without prompting"
+    echo ""
+    echo -e "${YELLOW}Examples:${NC}"
+    echo "  aide init project                                    # Use defaults"
+    echo "  aide init project -n \"My API\" -t \"Go, gRPC\"        # Custom fields"
+    echo "  aide init project -d \"User authentication service\"  # Add description"
+    echo "  aide status                                          # Check current project"
+    echo "  aide templates                                       # List available templates"
+    echo "  aide doctor                                          # Verify installation"
+}
+
+cmd_version() {
+    echo "aide ${VERSION}"
+}
+
+cmd_init() {
+    local subcommand="${1:-}"
+
+    if [[ "$subcommand" != "project" ]]; then
+        die "Usage: aide init project [options]\nRun 'aide --help' for more information."
+    fi
+    shift
+
+    local force="false"
+    local project_name=""
+    local project_desc=""
+    local tech_stack=""
+
+    # Parse arguments
+    while [[ $# -gt 0 ]]; do
+        case "$1" in
+            -f|--force)
+                force="true"
+                shift
+                ;;
+            -n|--name)
+                [[ $# -lt 2 ]] && die "--name requires a value"
+                project_name="$2"
+                shift 2
+                ;;
+            -d|--desc|--description)
+                [[ $# -lt 2 ]] && die "--desc requires a value"
+                project_desc="$2"
+                shift 2
+                ;;
+            -t|--tech|--stack)
+                [[ $# -lt 2 ]] && die "--tech requires a value"
+                tech_stack="$2"
+                shift 2
+                ;;
+            -h|--help)
+                cmd_help
+                return
+                ;;
+            -*)
+                die "Unknown option: $1 (see 'aide init --help')"
+                ;;
+            *)
+                die "Unexpected argument: $1\nUsage: aide init project [options]"
+                ;;
+        esac
+    done
+
+    # Verify template directory
+    if [[ ! -d "$TEMPLATE_DIR" ]]; then
+        die "Template directory not found: ${TEMPLATE_DIR}\nRun 'chezmoi apply' to install AI templates from your dotfiles."
+    fi
+
+    # Check base template exists
+    if [[ ! -f "${TEMPLATE_DIR}/base.md" ]]; then
+        die "base.md template not found in ${TEMPLATE_DIR}"
+    fi
+
+    # Set defaults
+    if [[ -z "$project_name" ]]; then
+        project_name="$(basename "$PWD")"
+    fi
+
+    # Read base template
+    local content
+    content="$(cat "${TEMPLATE_DIR}/base.md")"
+
+    # Replace placeholders
+    content="${content//\[Project Name\]/$project_name}"
+
+    if [[ -n "$project_desc" ]]; then
+        content="${content//\[Brief project description, tech stack, and purpose\]/$project_desc}"
+    fi
+
+    if [[ -n "$tech_stack" ]]; then
+        # If we have tech stack, append it to or replace in the description
+        if [[ -n "$project_desc" ]]; then
+            content="${content//$project_desc/$project_desc\n\n**Tech Stack:** $tech_stack}"
+        else
+            content="${content//\[Brief project description, tech stack, and purpose\]/Tech Stack: $tech_stack}"
+        fi
+    fi
+
+    info "Creating AGENTS.md..."
+    echo ""
+
+    write_file "$CANONICAL_FILE" "$content" "$force"
+
+    echo ""
+    success "Done. Review AGENTS.md and customize for this project."
+    echo -e "${DIM}Remember to commit AGENTS.md so your team and AI agents benefit.${NC}"
+}
+
+cmd_status() {
+    info "AI agent file status in $(basename "$PWD")/"
+    echo ""
+
+    if [[ -f "$CANONICAL_FILE" ]]; then
+        local lines
+        lines="$(wc -l < "$CANONICAL_FILE" | tr -d ' ')"
+        echo -e "  ${GREEN}✓${NC} AGENTS.md ${DIM}(${lines} lines)${NC}"
+        echo ""
+        echo -e "${GREEN}AGENTS.md exists.${NC}"
+    else
+        echo -e "  ${RED}✗${NC} AGENTS.md ${DIM}(missing)${NC}"
+        echo ""
+        echo -e "${YELLOW}No AGENTS.md found.${NC} Run ${CYAN}aide init project${NC} to create one."
+    fi
+}
+
+cmd_templates() {
+    if [[ $# -gt 0 && "$1" == "add" ]]; then
+        shift
+        cmd_templates_add "$@"
+        return
+    fi
+
+    if [[ ! -d "$TEMPLATE_DIR" ]]; then
+        die "Template directory not found: ${TEMPLATE_DIR}\nRun 'chezmoi apply' to install AI templates."
+    fi
+
+    info "Available templates"
+    echo -e "${DIM}Location: ${TEMPLATE_DIR}${NC}"
+    echo ""
+
+    # Base template
+    if [[ -f "${TEMPLATE_DIR}/base.md" ]]; then
+        local lines
+        lines="$(wc -l < "${TEMPLATE_DIR}/base.md" | tr -d ' ')"
+        echo -e "  ${GREEN}●${NC} base ${DIM}(${lines} lines — included in every project)${NC}"
+    else
+        echo -e "  ${RED}○${NC} base ${DIM}(missing — create base.md for universal rules)${NC}"
+    fi
+
+    # Type-specific templates
+    for t in $(available_types); do
+        local file="${TEMPLATE_DIR}/${t}.md"
+        local lines
+        lines="$(wc -l < "$file" | tr -d ' ')"
+        echo -e "  ${GREEN}●${NC} ${t} ${DIM}(${lines} lines)${NC}"
+    done
+
+    echo ""
+    echo -e "Use ${CYAN}aide init <type>${NC} to compose templates into agent files."
+    echo -e "Use ${CYAN}aide templates add <name>${NC} to create a new template."
+}
+
+cmd_templates_add() {
+    if [[ $# -eq 0 ]]; then
+        die "Template name required.\nUsage: aide templates add <name>"
+    fi
+
+    local name="$1"
+    local file="${TEMPLATE_DIR}/${name}.md"
+
+    if [[ -f "$file" ]]; then
+        die "Template '${name}' already exists at ${file}"
+    fi
+
+    if [[ ! -d "$TEMPLATE_DIR" ]]; then
+        die "Template directory not found: ${TEMPLATE_DIR}\nRun 'chezmoi apply' first."
+    fi
+
+    # Create template with scaffold
+    cat > "$file" << EOF
+## ${name^} Conventions
+
+- TODO: Add ${name}-specific conventions here
+- TODO: Include linting, formatting, and testing commands
+- TODO: Note project structure conventions
+EOF
+
+    success "Created template: ${file}"
+    echo -e "${DIM}Edit the template, then use ${NC}${CYAN}aide init ${name}${NC}${DIM} to include it in projects.${NC}"
+    echo ""
+    echo -e "${YELLOW}To persist in dotfiles:${NC}"
+    echo -e "  cp ${file} ~/code/dotfiles/home/dot_config/aide/ai-templates/${name}.md"
+    echo -e "  ${DIM}# Or use: chezmoi add ${file}${NC}"
+}
+
+
+cmd_doctor() {
+    info "Checking AI development environment..."
+    echo ""
+
+    local issues=0
+
+    # Check template directory
+    echo -e "${BOLD}Templates:${NC}"
+    if [[ -d "$TEMPLATE_DIR" ]]; then
+        local count
+        count="$(find "$TEMPLATE_DIR" -maxdepth 1 -name '*.md' | wc -l | tr -d ' ')"
+        echo -e "  ${GREEN}✓${NC} Template directory exists (${count} files)"
+    else
+        echo -e "  ${RED}✗${NC} Template directory missing: ${TEMPLATE_DIR}"
+        ((issues++))
+    fi
+
+    if [[ -f "${TEMPLATE_DIR}/base.md" ]]; then
+        echo -e "  ${GREEN}✓${NC} base.md exists"
+    else
+        echo -e "  ${RED}✗${NC} base.md missing"
+        ((issues++))
+    fi
+
+    # Check aide is in PATH
+    echo ""
+    echo -e "${BOLD}CLI:${NC}"
+    if command -v aide &>/dev/null; then
+        echo -e "  ${GREEN}✓${NC} aide is in PATH"
+    else
+        echo -e "  ${RED}✗${NC} aide not found in PATH"
+        ((issues++))
+    fi
+
+    # Summary
+    echo ""
+    if [[ $issues -eq 0 ]]; then
+        success "All checks passed."
+    else
+        echo -e "${YELLOW}${issues} issue(s) found.${NC} Run ${CYAN}chezmoi apply${NC} to fix."
+    fi
+}
+
+# --- Main dispatch ---
+
+main() {
+    if [[ $# -eq 0 ]]; then
+        cmd_help
+        exit 0
+    fi
+
+    local command="$1"
+    shift
+
+    case "$command" in
+        init)       cmd_init "$@" ;;
+        status|st)  cmd_status "$@" ;;
+        templates)  cmd_templates "$@" ;;
+        doctor)     cmd_doctor "$@" ;;
+        help|-h|--help)     cmd_help ;;
+        version|-v|--version) cmd_version ;;
+        *)
+            die "Unknown command: ${command}\nRun 'aide --help' for usage."
+            ;;
+    esac
+}
+
+main "$@"

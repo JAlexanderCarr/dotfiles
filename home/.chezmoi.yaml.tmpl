@@ -28,6 +28,7 @@
 {{- /* ═══════════════════════════════════════════════════════════════════════ */ -}}
 
 {{- $installMotd := promptBoolOnce . "addons.motd" "Custom MOTD" false }}
+{{- $installAI := promptBoolOnce . "addons.ai" "AI Agent Configs" true }}
 
 data:
   name: {{ $name | quote }}
@@ -45,3 +46,4 @@ data:
     fonts: {{ $installFonts }}
   addons:
     motd: {{ $installMotd }}
+    ai: {{ $installAI }}

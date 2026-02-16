@@ -89,6 +89,11 @@ precmd() {
 }
 
 # --- Tool initialization ---
+
+# NVM (Node Version Manager)
+export NVM_DIR="$HOME/.nvm"
+[ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
+
 if command -v goenv &>/dev/null; then
     eval "$(goenv init -)" 2>/dev/null
 fi
@@ -98,12 +103,31 @@ if command -v pyenv &>/dev/null; then
     eval "$(pyenv virtualenv-init -)" 2>/dev/null
 fi
 
+# --- fzf ---
+if command -v fzf &>/dev/null; then
+    # Use modern integration if available (fzf 0.48.0+)
+    if fzf --zsh >/dev/null 2>&1; then
+        source <(fzf --zsh)
+    else
+        # Fallback for older versions - source integration files
+        [[ -f /usr/share/fzf/key-bindings.zsh ]] && source /usr/share/fzf/key-bindings.zsh
+        [[ -f /usr/share/fzf/completion.zsh ]] && source /usr/share/fzf/completion.zsh
+        [[ -f /opt/homebrew/opt/fzf/shell/key-bindings.zsh ]] && source /opt/homebrew/opt/fzf/shell/key-bindings.zsh
+        [[ -f /opt/homebrew/opt/fzf/shell/completion.zsh ]] && source /opt/homebrew/opt/fzf/shell/completion.zsh
+    fi
+fi
+
 # --- Aliases ---
+
 if [[ -f ~/.aliases ]]; then
     source ~/.aliases
 fi
 
 # --- Completions ---
+
+autoload -Uz compinit
+compinit
+
 if [[ -f ~/.zsh_completion ]]; then
     source ~/.zsh_completion
 fi

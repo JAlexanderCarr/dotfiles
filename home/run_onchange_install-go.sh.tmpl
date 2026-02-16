@@ -67,16 +67,7 @@ export GOENV_ROOT
 export PATH="$GOENV_ROOT/bin:$PATH"
 eval "$(goenv init -)" >> "$CHEZMOI_LOG_FILE" 2>&1 || true
 
-# Install the specified Go version (goenv handles this idempotently)
-if goenv versions --bare 2>/dev/null | grep -q "^${GO_VERSION}$"; then
-    with_spinner "Go ${GO_VERSION} already installed"
-else
-    with_spinner "Installing go ${GO_VERSION}" goenv install "$GO_VERSION"
-fi
-
-# Set global version
-with_spinner "Setting go ${GO_VERSION} as global" goenv global "$GO_VERSION"
-# Clean up old Go versions (keep only the current version)
+# Clean up old Go versions BEFORE installing new one
 log_silent "Cleaning up old Go versions"
 for version in $(goenv versions --bare 2>/dev/null); do
     if [[ "$version" != "$GO_VERSION" ]]; then
@@ -84,5 +75,15 @@ for version in $(goenv versions --bare 2>/dev/null); do
         goenv uninstall -f "$version" >> "$CHEZMOI_LOG_FILE" 2>&1 || true
     fi
 done
+
+# Install the specified Go version (goenv handles this idempotently)
+if goenv versions --bare 2>/dev/null | grep -q "^${GO_VERSION}$"; then
+    print_done "Go ${GO_VERSION} already installed"
+else
+    with_spinner "Installing go ${GO_VERSION}" goenv install "$GO_VERSION"
+fi
+
+# Set global version
+with_spinner "Setting go ${GO_VERSION} as global" goenv global "$GO_VERSION"
 
 print_done "Go ${GO_VERSION} installed"

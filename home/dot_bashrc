@@ -91,6 +91,11 @@ case "$TERM" in
 esac
 
 # --- Tool initialization ---
+
+# NVM (Node Version Manager)
+export NVM_DIR="$HOME/.nvm"
+[ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
+
 if command -v goenv >/dev/null 2>&1; then
     eval "$(goenv init -)" 2>/dev/null
 fi
@@ -98,6 +103,20 @@ fi
 if command -v pyenv >/dev/null 2>&1; then
     eval "$(pyenv init -)" 2>/dev/null
     eval "$(pyenv virtualenv-init -)" 2>/dev/null
+fi
+
+# --- fzf ---
+if command -v fzf >/dev/null 2>&1; then
+    # Use modern integration if available (fzf 0.48.0+)
+    if fzf --bash >/dev/null 2>&1; then
+        eval "$(fzf --bash)"
+    else
+        # Fallback for older versions - source integration files
+        [ -f /usr/share/fzf/key-bindings.bash ] && . /usr/share/fzf/key-bindings.bash
+        [ -f /usr/share/fzf/completion.bash ] && . /usr/share/fzf/completion.bash
+        [ -f /opt/homebrew/opt/fzf/shell/key-bindings.bash ] && . /opt/homebrew/opt/fzf/shell/key-bindings.bash
+        [ -f /opt/homebrew/opt/fzf/shell/completion.bash ] && . /opt/homebrew/opt/fzf/shell/completion.bash
+    fi
 fi
 
 # --- Aliases ---
