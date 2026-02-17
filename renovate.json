@@ -98,17 +98,11 @@
     {
       "customType": "regex",
       "managerFilePatterns": [
-        "/\\.renovate/Dockerfile\\.renovate$/"
+        "/home/run_onchange_install-neovim\\.sh\\.tmpl$/"
       ],
       "matchStrings": [
-        "FROM\\s+(?<depName>[^:\\s]+):(?<currentValue>[^\\s]+)"
+        "NVIM_VERSION=\"(?<currentValue>[^\"]+)\""
       ],
-      "datasourceTemplate": "docker"
-    },
-    {
-      "customType": "regex",
-      "fileMatch": ["home/run_onchange_install-neovim\.sh\.tmpl$"],
-      "matchStrings": ["NVIM_VERSION=\"(?<currentValue>[^\"]+)\""],
       "depNameTemplate": "neovim",
       "datasourceTemplate": "github-releases",
       "packageNameTemplate": "neovim/neovim",
@@ -116,16 +110,6 @@
     }
   ],
   "packageRules": [
-    {
-      "matchManagers": [
-        "custom.regex"
-      ],
-      "matchFileNames": [
-        ".renovate/Dockerfile.renovate"
-      ],
-      "commitMessagePrefix": "chore(renovate):",
-      "description": "Track Renovate image updates"
-    },
     {
       "matchManagers": [
         "custom.regex"
