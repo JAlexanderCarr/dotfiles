@@ -158,6 +158,7 @@ data:
     fonts: true
   addons:
     motd: true
+    ai: true
 EOF
 
 check_file "$HOME/.config/chezmoi/chezmoi.yaml" "chezmoi config"
