@@ -60,13 +60,13 @@ printf "  ${CLR_GREEN}✓${CLR_RESET} Python\n"
 {{- else }}
 printf "  ${CLR_DIM}○ Python${CLR_RESET}\n"
 {{- end }}
-{{- if .packages.fonts }}
+printf "\n"
+printf "${CLR_BOLD}${CLR_BLUE}▸${CLR_RESET} ${CLR_BOLD}Add-ons${CLR_RESET}\n"
+{{- if .addons.fonts }}
 printf "  ${CLR_GREEN}✓${CLR_RESET} Fonts\n"
 {{- else }}
 printf "  ${CLR_DIM}○ Fonts${CLR_RESET}\n"
 {{- end }}
-printf "\n"
-printf "${CLR_BOLD}${CLR_BLUE}▸${CLR_RESET} ${CLR_BOLD}Add-ons${CLR_RESET}\n"
 {{- if .addons.motd }}
 printf "  ${CLR_GREEN}✓${CLR_RESET} Custom MOTD\n"
 {{- else }}

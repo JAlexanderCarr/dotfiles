@@ -16,7 +16,7 @@ source "${HOME}/.local/bin/chezmoi-log-helper.sh" 2>/dev/null || {
 }
 init_logging 2>/dev/null || true
 
-{{- if not .packages.fonts }}
+{{- if not .addons.fonts }}
 exit 0
 {{- end }}
 

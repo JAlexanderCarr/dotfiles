@@ -17,17 +17,17 @@
 {{- $installDevtools := promptBoolOnce . "packages.devtools" "Development tools" true -}}
 {{- $installNeovim := promptBoolOnce . "packages.neovim" "Neovim" true -}}
 {{- $installDocker := promptBoolOnce . "packages.docker" "Docker" false -}}
-{{- $installGo := promptBoolOnce . "packages.go" "Go" false -}}
-{{- $installKubernetes := promptBoolOnce . "packages.kubernetes" "Kubernetes tools" false -}}
-{{- $installNode := promptBoolOnce . "packages.node" "Node" false -}}
-{{- $installPython := promptBoolOnce . "packages.python" "Python" false -}}
-{{- $installFonts := promptBoolOnce . "packages.fonts" "Fonts" true -}}
+{{- $installGo := promptBoolOnce . "packages.go" "Go" true -}}
+{{- $installKubernetes := promptBoolOnce . "packages.kubernetes" "Kubernetes tools" true -}}
+{{- $installNode := promptBoolOnce . "packages.node" "Node" true -}}
+{{- $installPython := promptBoolOnce . "packages.python" "Python" true -}}
 
 {{- /* ═══════════════════════════════════════════════════════════════════════ */ -}}
 {{- /*                              Add-ons                                    */ -}}
 {{- /* ═══════════════════════════════════════════════════════════════════════ */ -}}
 
-{{- $installMotd := promptBoolOnce . "addons.motd" "Custom MOTD" false }}
+{{- $installFonts := promptBoolOnce . "addons.fonts" "Fonts" false }}
+{{- $installMotd := promptBoolOnce . "addons.motd" "Custom MOTD" true }}
 {{- $installAI := promptBoolOnce . "addons.ai" "AI Agent Configs" true }}
 
 data:
@@ -43,7 +43,7 @@ data:
     kubernetes: {{ $installKubernetes }}
     node: {{ $installNode }}
     python: {{ $installPython }}
-    fonts: {{ $installFonts }}
   addons:
+    fonts: {{ $installFonts }}
     motd: {{ $installMotd }}
     ai: {{ $installAI }}
