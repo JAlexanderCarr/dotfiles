@@ -37,3 +37,8 @@ fonts/
 .config/aide/ai-templates/
 .local/bin/aide
 {{ end }}
+
+# MOTD (conditional)
+{{ if not .addons.motd }}
+.local/bin/motd
+{{ end }}

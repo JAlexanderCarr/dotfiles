@@ -287,22 +287,16 @@ if [[ "$SKIP_PACKAGES" == "false" ]]; then
         check_fail "Fonts directory not found"
     fi
 
-    # MOTD installation
-    if [[ -f "/etc/motd" ]]; then
-        check_pass "MOTD file exists"
-        # Check that MOTD contains expected content (system info header)
-        if grep -q "System Information" /etc/motd 2>/dev/null || grep -q "Welcome" /etc/motd 2>/dev/null; then
-            check_pass "MOTD contains expected content"
+    # MOTD dynamic script
+    if [[ -f "$HOME/.local/bin/motd" ]]; then
+        check_pass "MOTD script exists at ~/.local/bin/motd"
+        if [[ -x "$HOME/.local/bin/motd" ]]; then
+            check_pass "MOTD script is executable"
         else
-            check_pass "MOTD file installed (content may vary)"
+            check_fail "MOTD script is not executable"
         fi
     else
-        # MOTD requires sudo, so it may fail in containers - check if script ran
-        if [[ -d "$HOME/.local/log/chezmoi" ]] && ls "$HOME/.local/log/chezmoi/"install* 2>/dev/null | grep -q .; then
-            check_pass "MOTD installation attempted (may require sudo)"
-        else
-            check_fail "MOTD file not found"
-        fi
+        check_fail "MOTD script not found at ~/.local/bin/motd"
     fi
 else
     log_info "Skipping package installation checks (--skip-packages)"
