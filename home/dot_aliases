@@ -16,6 +16,7 @@ alias la='ls -A'
 alias l='ls -CF'
 
 # git aliases
+alias git='hub'
 alias g='git'
 alias gs='git status'
 alias ga='git add'
