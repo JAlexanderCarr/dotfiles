@@ -131,6 +131,7 @@ generate_motd() {
 
     # Chezmoi status
     if command -v chezmoi &>/dev/null; then
+        chezmoi update --apply=false &>/dev/null || true
         chezmoi_changes=$(chezmoi status 2>/dev/null | wc -l | tr -d ' ')
         if [[ "$chezmoi_changes" -gt 0 ]]; then
             chezmoi_status="${YELLOW}${chezmoi_changes} files need update${RESET} (run: chezmoi apply)"
