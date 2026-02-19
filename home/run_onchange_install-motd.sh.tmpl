@@ -84,7 +84,14 @@ generate_motd() {
 
     # Disk info (root filesystem)
     if [[ "$(uname)" == "Darwin" ]]; then
-        disk_info=$(df -H / | tail -1)
+        # On APFS (macOS 10.13+), / is a read-only system-only volume (~10GB).
+        # /System/Volumes/Data is the data volume that shares the full APFS container
+        # and reports accurate total size and combined usage.
+        if [[ -d "/System/Volumes/Data" ]]; then
+            disk_info=$(df -H /System/Volumes/Data | tail -1)
+        else
+            disk_info=$(df -H / | tail -1)
+        fi
     else
         disk_info=$(df -H / | tail -1)
     fi
