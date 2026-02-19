@@ -40,9 +40,6 @@ fi
 log_section "Kubernetes Tools Installation"
 print_header "Kubernetes Tools"
 
-# Enable git HTTPS override for installation
-enable_git_https_override 2>/dev/null || true
-
 install_k8s_macos() {
     # Clean up and install kind (in-place update)
     log_silent "Removing old kind binary if present"
@@ -62,11 +59,16 @@ install_k8s_macos() {
     with_spinner "Installing kubectl ${KUBECTL_VERSION}" sudo install -o root -g wheel -m 0755 /tmp/kubectl /usr/local/bin/kubectl
     rm -f /tmp/kubectl >> "$CHEZMOI_LOG_FILE" 2>&1
 
-    # Clean up and install kubectx and kubens (same as Linux)
+    # Clean up and install kubectx and kubens
     log_silent "Cleaning up old kubectx installation"
     sudo rm -rf /opt/kubectx >> "$CHEZMOI_LOG_FILE" 2>&1 || true
     sudo rm -f /usr/local/bin/kubectx /usr/local/bin/kubens >> "$CHEZMOI_LOG_FILE" 2>&1 || true
-    with_spinner "Installing kubectx/kubens" sudo git clone --quiet https://github.com/ahmetb/kubectx.git /opt/kubectx
+
+    log_silent "Downloading kubectx"
+    curl -fsSL -o /tmp/kubectx.zip "https://github.com/ahmetb/kubectx/archive/refs/heads/master.zip" >> "$CHEZMOI_LOG_FILE" 2>&1
+    unzip -q /tmp/kubectx.zip -d /tmp >> "$CHEZMOI_LOG_FILE" 2>&1
+    with_spinner "Installing kubectx/kubens" sudo mv /tmp/kubectx-master /opt/kubectx
+    rm -f /tmp/kubectx.zip >> "$CHEZMOI_LOG_FILE" 2>&1
 
     # Create symlinks
     log_silent "Creating kubectx/kubens symlinks"
@@ -78,7 +80,7 @@ install_k8s_linux() {
     # Clean up and install kind (in-place update)
     log_silent "Removing old kind binary if present"
     sudo rm -f /usr/local/bin/kind >> "$CHEZMOI_LOG_FILE" 2>&1 || true
-    
+
     log_silent "Downloading kind ${KIND_VERSION}"
     curl -fsSL -o /tmp/kind "https://kind.sigs.k8s.io/dl/v${KIND_VERSION}/kind-linux-$ARCH_STD" >> "$CHEZMOI_LOG_FILE" 2>&1
     chmod +x /tmp/kind >> "$CHEZMOI_LOG_FILE" 2>&1
@@ -87,22 +89,27 @@ install_k8s_linux() {
     # Clean up and install kubectl (in-place update)
     log_silent "Removing old kubectl binary if present"
     sudo rm -f /usr/local/bin/kubectl >> "$CHEZMOI_LOG_FILE" 2>&1 || true
-    
+
     log_silent "Downloading kubectl ${KUBECTL_VERSION}"
     curl -fsSL -o /tmp/kubectl "https://dl.k8s.io/release/v${KUBECTL_VERSION}/bin/linux/$ARCH_STD/kubectl" >> "$CHEZMOI_LOG_FILE" 2>&1
     with_spinner "Installing kubectl ${KUBECTL_VERSION}" sudo install -o root -g root -m 0755 /tmp/kubectl /usr/local/bin/kubectl
-    
+
     # Setup kubectl completion
     log_silent "Setting up kubectl completion"
     sudo /usr/local/bin/kubectl completion bash 2>/dev/null | sudo tee /etc/bash_completion.d/kubectl > /dev/null 2>> "$CHEZMOI_LOG_FILE"
     rm -f /tmp/kubectl >> "$CHEZMOI_LOG_FILE" 2>&1
 
-    # Clean up and install kubectx and kubens (in-place update via git)
+    # Clean up and install kubectx and kubens
     log_silent "Cleaning up old kubectx installation"
     sudo rm -rf /opt/kubectx >> "$CHEZMOI_LOG_FILE" 2>&1 || true
     sudo rm -f /usr/local/bin/kubectx /usr/local/bin/kubens >> "$CHEZMOI_LOG_FILE" 2>&1 || true
-    with_spinner "Installing kubectx/kubens" sudo git clone --quiet https://github.com/ahmetb/kubectx.git /opt/kubectx
-    
+
+    log_silent "Downloading kubectx"
+    curl -fsSL -o /tmp/kubectx.zip "https://github.com/ahmetb/kubectx/archive/refs/heads/master.zip" >> "$CHEZMOI_LOG_FILE" 2>&1
+    unzip -q /tmp/kubectx.zip -d /tmp >> "$CHEZMOI_LOG_FILE" 2>&1
+    with_spinner "Installing kubectx/kubens" sudo mv /tmp/kubectx-master /opt/kubectx
+    rm -f /tmp/kubectx.zip >> "$CHEZMOI_LOG_FILE" 2>&1
+
     # Create symlinks
     log_silent "Creating kubectx/kubens symlinks"
     sudo ln -sf /opt/kubectx/kubectx /usr/local/bin/kubectx >> "$CHEZMOI_LOG_FILE" 2>&1
