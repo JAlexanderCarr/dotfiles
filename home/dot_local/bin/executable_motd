@@ -81,7 +81,7 @@ generate_motd() {
 
     # Uptime
     if [[ "$(uname)" == "Darwin" ]]; then
-        boot_time=$(sysctl -n kern.boottime | awk -F'[= ,]' '{print $6}')
+        boot_time=$(sysctl -n kern.boottime | sed 's/.*{ sec = \([0-9]*\).*/\1/')
         now=$(date +%s)
         uptime_secs=$((now - boot_time))
         uptime_days=$((uptime_secs / 86400))
@@ -93,18 +93,25 @@ generate_motd() {
     fi
 
     # Available updates
+    local updates_count=0
+    local has_pkg_manager=false
     if command -v apt &>/dev/null; then
-        updates_info=$(apt list --upgradable 2>/dev/null | grep -c upgradable) || updates_info=0
-        updates_info="${updates_info} packages"
-    elif command -v dnf &>/dev/null; then
-        updates_info=$(dnf check-update --quiet 2>/dev/null | wc -l | tr -d ' ')
-        updates_info="${updates_info} packages"
+        has_pkg_manager=true
+        updates_count=$(( updates_count + $(apt list --upgradable 2>/dev/null | grep -c upgradable || echo 0) ))
+    fi
+    if command -v dnf &>/dev/null; then
+        has_pkg_manager=true
+        updates_count=$(( updates_count + $(dnf check-update --quiet 2>/dev/null | wc -l | tr -d ' ') ))
     elif command -v yum &>/dev/null; then
-        updates_info=$(yum check-update --quiet 2>/dev/null | wc -l | tr -d ' ')
-        updates_info="${updates_info} packages"
-    elif [[ "$(uname)" == "Darwin" ]]; then
-        updates_info=$(softwareupdate -l 2>&1 | grep -c "Title:" || echo "0")
-        updates_info="${updates_info} updates"
+        has_pkg_manager=true
+        updates_count=$(( updates_count + $(yum check-update --quiet 2>/dev/null | wc -l | tr -d ' ') ))
+    fi
+    if command -v brew &>/dev/null; then
+        has_pkg_manager=true
+        updates_count=$(( updates_count + $(HOMEBREW_NO_AUTO_UPDATE=1 brew outdated 2>/dev/null | wc -l | tr -d ' ') ))
+    fi
+    if [[ "$has_pkg_manager" == true ]]; then
+        updates_info="${updates_count} packages"
     else
         updates_info="N/A"
     fi
