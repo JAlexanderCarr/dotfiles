@@ -41,4 +41,5 @@ fonts/
 # MOTD (conditional)
 {{ if not .addons.motd }}
 .local/bin/motd
+.local/bin/motd-static
 {{ end }}

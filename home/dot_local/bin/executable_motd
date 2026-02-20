@@ -12,14 +12,15 @@ MAGENTA='\033[35m'
 WHITE='\033[97m'
 RESET='\033[0m'
 
-generate_motd() {
-    local os_name arch hostname_str user_name
-    local mem_total mem_used mem_percent
-    local disk_total disk_used disk_percent
-    local ip_addr uptime_str
-    local updates_info active_users
+# Sanitize a value for safe inclusion in a single-quoted shell assignment
+_sanitize() {
+    printf '%s' "$1" | sed "s/'/'\\\\''/g"
+}
 
-    # Detect OS
+_gather_system_info() {
+    local outfile="$1"
+    local os_name arch hostname_str user_name
+
     if [[ -f /etc/os-release ]]; then
         os_name=$(source /etc/os-release && echo "$PRETTY_NAME")
     elif [[ "$(uname)" == "Darwin" ]]; then
@@ -28,38 +29,55 @@ generate_motd() {
         os_name=$(uname -s)
     fi
 
-    # System info
     arch=$(uname -m)
     hostname_str=$(hostname -s 2>/dev/null || hostname)
     user_name=$(whoami)
 
-    # Memory info
+    cat > "$outfile" <<VARS
+os_name='$(_sanitize "$os_name")'
+arch='$(_sanitize "$arch")'
+hostname_str='$(_sanitize "$hostname_str")'
+user_name='$(_sanitize "$user_name")'
+VARS
+}
+
+_gather_memory() {
+    local outfile="$1"
+    local mem_total mem_used mem_percent
+
     if [[ "$(uname)" == "Darwin" ]]; then
         mem_total=$(sysctl -n hw.memsize | awk '{printf "%.1f GB", $1/1024/1024/1024}')
-        # macOS memory usage approximation
+        local pages_free pages_active pages_inactive pages_wired page_size
         pages_free=$(vm_stat | grep "Pages free" | awk '{print $3}' | tr -d '.')
         pages_active=$(vm_stat | grep "Pages active" | awk '{print $3}' | tr -d '.')
         pages_inactive=$(vm_stat | grep "Pages inactive" | awk '{print $3}' | tr -d '.')
         pages_wired=$(vm_stat | grep "Pages wired" | awk '{print $4}' | tr -d '.')
         page_size=$(sysctl -n hw.pagesize)
-        mem_used_bytes=$(( (pages_active + pages_wired) * page_size ))
-        mem_total_bytes=$(sysctl -n hw.memsize)
+        local mem_used_bytes=$(( (pages_active + pages_wired) * page_size ))
+        local mem_total_bytes=$(sysctl -n hw.memsize)
         mem_percent=$(awk "BEGIN {printf \"%.0f\", ($mem_used_bytes/$mem_total_bytes)*100}")
         mem_used=$(awk "BEGIN {printf \"%.1f GB\", $mem_used_bytes/1024/1024/1024}")
     else
-        mem_info=$(free -b | grep Mem)
-        mem_total_bytes=$(echo "$mem_info" | awk '{print $2}')
-        mem_used_bytes=$(echo "$mem_info" | awk '{print $3}')
+        local mem_info=$(free -b | grep Mem)
+        local mem_total_bytes=$(echo "$mem_info" | awk '{print $2}')
+        local mem_used_bytes=$(echo "$mem_info" | awk '{print $3}')
         mem_total=$(awk "BEGIN {printf \"%.1f GB\", $mem_total_bytes/1024/1024/1024}")
         mem_used=$(awk "BEGIN {printf \"%.1f GB\", $mem_used_bytes/1024/1024/1024}")
         mem_percent=$(awk "BEGIN {printf \"%.0f\", ($mem_used_bytes/$mem_total_bytes)*100}")
     fi
 
-    # Disk info (root filesystem)
+    cat > "$outfile" <<VARS
+mem_total='$(_sanitize "$mem_total")'
+mem_used='$(_sanitize "$mem_used")'
+mem_percent='$(_sanitize "$mem_percent")'
+VARS
+}
+
+_gather_disk() {
+    local outfile="$1"
+    local disk_info disk_total disk_used disk_percent
+
     if [[ "$(uname)" == "Darwin" ]]; then
-        # On APFS (macOS 10.13+), / is a read-only system-only volume (~10GB).
-        # /System/Volumes/Data is the data volume that shares the full APFS container
-        # and reports accurate total size and combined usage.
         if [[ -d "/System/Volumes/Data" ]]; then
             disk_info=$(df -H /System/Volumes/Data | tail -1)
         else
@@ -72,15 +90,32 @@ generate_motd() {
     disk_used=$(echo "$disk_info" | awk '{print $3}')
     disk_percent=$(echo "$disk_info" | awk '{print $5}' | tr -d '%')
 
-    # IP address
+    cat > "$outfile" <<VARS
+disk_total='$(_sanitize "$disk_total")'
+disk_used='$(_sanitize "$disk_used")'
+disk_percent='$(_sanitize "$disk_percent")'
+VARS
+}
+
+_gather_ip() {
+    local outfile="$1"
+    local ip_addr
+
     if [[ "$(uname)" == "Darwin" ]]; then
         ip_addr=$(ipconfig getifaddr en0 2>/dev/null || ipconfig getifaddr en1 2>/dev/null || echo "N/A")
     else
         ip_addr=$(hostname -I 2>/dev/null | awk '{print $1}' || ip route get 1 2>/dev/null | awk '{print $7;exit}' || echo "N/A")
     fi
 
-    # Uptime
+    echo "ip_addr='$(_sanitize "$ip_addr")'" > "$outfile"
+}
+
+_gather_uptime() {
+    local outfile="$1"
+    local uptime_str
+
     if [[ "$(uname)" == "Darwin" ]]; then
+        local boot_time now uptime_secs uptime_days uptime_hours uptime_mins
         boot_time=$(sysctl -n kern.boottime | sed 's/.*{ sec = \([0-9]*\).*/\1/')
         now=$(date +%s)
         uptime_secs=$((now - boot_time))
@@ -92,9 +127,14 @@ generate_motd() {
         uptime_str=$(uptime -p 2>/dev/null | sed 's/up //' || uptime | awk -F'( |,|:)+' '{print $6" days, "$8"h "$9"m"}')
     fi
 
-    # Available updates
+    echo "uptime_str='$(_sanitize "$uptime_str")'" > "$outfile"
+}
+
+_gather_updates() {
+    local outfile="$1"
     local updates_count=0
     local has_pkg_manager=false
+
     if command -v apt &>/dev/null; then
         has_pkg_manager=true
         updates_count=$(( updates_count + $(apt list --upgradable 2>/dev/null | grep -c upgradable || echo 0) ))
@@ -110,28 +150,42 @@ generate_motd() {
         has_pkg_manager=true
         updates_count=$(( updates_count + $(HOMEBREW_NO_AUTO_UPDATE=1 brew outdated 2>/dev/null | wc -l | tr -d ' ') ))
     fi
+
+    local updates_info
     if [[ "$has_pkg_manager" == true ]]; then
         updates_info="${updates_count} packages"
     else
         updates_info="N/A"
     fi
 
-    # Active users/sessions
-    # Detect if running in a container
+    echo "updates_info='$(_sanitize "$updates_info")'" > "$outfile"
+}
+
+_gather_users() {
+    local outfile="$1"
+    local active_users users_list
+
     if [[ -f /.dockerenv ]] || grep -q 'docker\|lxc\|containerd' /proc/1/cgroup 2>/dev/null; then
-        # In container: count PTY sessions (each -it session creates a /dev/pts/N)
-        # Subtract 1 for ptmx
         active_users=$(find /dev/pts -maxdepth 1 -type c ! -name ptmx 2>/dev/null | wc -l | tr -d ' ')
         users_list="docker sessions"
     else
-        # Normal system: use who
         active_users=$(who | wc -l | tr -d ' ')
         users_list=$(who | awk '{print $1}' | sort -u | tr '\n' ' ')
     fi
 
-    # Chezmoi status
+    cat > "$outfile" <<VARS
+active_users='$(_sanitize "$active_users")'
+users_list='$(_sanitize "$users_list")'
+VARS
+}
+
+_gather_chezmoi() {
+    local outfile="$1"
+    local chezmoi_status
+
     if command -v chezmoi &>/dev/null; then
         chezmoi update --apply=false &>/dev/null || true
+        local chezmoi_changes
         chezmoi_changes=$(chezmoi status 2>/dev/null | wc -l | tr -d ' ')
         if [[ "$chezmoi_changes" -gt 0 ]]; then
             chezmoi_status="${YELLOW}${chezmoi_changes} files need update${RESET} (run: chezmoi apply)"
@@ -141,6 +195,42 @@ generate_motd() {
     else
         chezmoi_status="${DIM}not installed${RESET}"
     fi
+
+    echo "chezmoi_status='$(_sanitize "$chezmoi_status")'" > "$outfile"
+}
+
+generate_motd() {
+    local tmpdir
+    tmpdir=$(mktemp -d)
+
+    # Launch all data-gathering jobs in parallel
+    _gather_system_info "$tmpdir/system" &
+    _gather_memory "$tmpdir/memory" &
+    _gather_disk "$tmpdir/disk" &
+    _gather_ip "$tmpdir/ip" &
+    _gather_uptime "$tmpdir/uptime" &
+    _gather_updates "$tmpdir/updates" &
+    _gather_users "$tmpdir/users" &
+    _gather_chezmoi "$tmpdir/chezmoi" &
+    wait
+
+    # Read results into current shell
+    local os_name arch hostname_str user_name
+    local mem_total mem_used mem_percent
+    local disk_total disk_used disk_percent
+    local ip_addr uptime_str
+    local updates_info active_users users_list chezmoi_status
+
+    source "$tmpdir/system"
+    source "$tmpdir/memory"
+    source "$tmpdir/disk"
+    source "$tmpdir/ip"
+    source "$tmpdir/uptime"
+    source "$tmpdir/updates"
+    source "$tmpdir/users"
+    source "$tmpdir/chezmoi"
+
+    rm -rf "$tmpdir"
 
     # Build progress bar function
     progress_bar() {

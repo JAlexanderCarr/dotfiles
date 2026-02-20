@@ -1,5 +1,7 @@
 #!/bin/bash
-# Updates /etc/motd with system information
+# Installs motd via the OS's native login mechanism:
+# - Linux with update-motd.d: symlinks the dynamic motd script
+# - macOS / Linux without update-motd.d: generates a static /etc/motd file
 
 # Initialize log file first (before any redirects)
 mkdir -p "${HOME}/.local/log/chezmoi"
@@ -24,22 +26,45 @@ exit 0
 
 set -euo pipefail
 
-log_section "MOTD Cleanup"
+log_section "MOTD Installation"
 print_header "MOTD Configuration"
 
-# Clean up any previously written static /etc/motd
-if [[ -f /etc/motd ]]; then
-    log_silent "Removing stale static /etc/motd"
-    if [[ -w /etc/motd ]] || [[ "$(id -u)" == "0" ]]; then
-        rm -f /etc/motd 2>> "$CHEZMOI_LOG_FILE" || sudo rm -f /etc/motd 2>> "$CHEZMOI_LOG_FILE" || true
-        print_done "Removed stale /etc/motd"
+MOTD_DYNAMIC="${HOME}/.local/bin/motd"
+MOTD_STATIC="${HOME}/.local/bin/motd-static"
+
+if [[ -d /etc/update-motd.d ]]; then
+    # Linux with update-motd.d: install dynamic motd
+    log_silent "Detected /etc/update-motd.d, installing dynamic motd"
+
+    MOTD_TARGET="/etc/update-motd.d/99-custom-motd"
+
+    if [[ -f "$MOTD_DYNAMIC" ]]; then
+        sudo cp "$MOTD_DYNAMIC" "$MOTD_TARGET" 2>> "$CHEZMOI_LOG_FILE"
+        sudo chmod 755 "$MOTD_TARGET" 2>> "$CHEZMOI_LOG_FILE"
+        print_done "Installed dynamic motd to $MOTD_TARGET"
     else
+        print_fail "Dynamic motd script not found at $MOTD_DYNAMIC"
+        log_silent "Missing $MOTD_DYNAMIC"
+    fi
+
+    # Remove stale static /etc/motd if present
+    if [[ -f /etc/motd ]]; then
         sudo rm -f /etc/motd 2>> "$CHEZMOI_LOG_FILE" || true
         print_done "Removed stale /etc/motd"
+        log_silent "Removed stale /etc/motd"
     fi
 else
-    log_silent "No stale /etc/motd found"
+    # macOS or Linux without update-motd.d: generate static /etc/motd
+    log_silent "No /etc/update-motd.d found, generating static /etc/motd"
+
+    if [[ -f "$MOTD_STATIC" ]]; then
+        local_motd=$("$MOTD_STATIC" 2>/dev/null)
+        echo -e "$local_motd" | sudo tee /etc/motd > /dev/null 2>> "$CHEZMOI_LOG_FILE"
+        print_done "Generated static /etc/motd from motd-static"
+    else
+        print_fail "Static motd script not found at $MOTD_STATIC"
+        log_silent "Missing $MOTD_STATIC"
+    fi
 fi
 
-print_done "MOTD now runs dynamically from ~/.local/bin/motd"
-log_silent "MOTD cleanup complete"
+log_silent "MOTD installation complete"

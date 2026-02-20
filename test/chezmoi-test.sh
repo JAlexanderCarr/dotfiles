@@ -298,6 +298,9 @@ if [[ "$SKIP_PACKAGES" == "false" ]]; then
     else
         check_fail "MOTD script not found at ~/.local/bin/motd"
     fi
+
+    # MOTD static script
+    check_file "$HOME/.local/bin/motd-static" "MOTD static script"
 else
     log_info "Skipping package installation checks (--skip-packages)"
 fi

@@ -131,10 +131,3 @@ compinit
 if [[ -f ~/.zsh_completion ]]; then
     source ~/.zsh_completion
 fi
-
-{{ if .addons.motd -}}
-# --- MOTD ---
-if [[ -f "$HOME/.local/bin/motd" ]]; then
-    "$HOME/.local/bin/motd"
-fi
-{{ end -}}

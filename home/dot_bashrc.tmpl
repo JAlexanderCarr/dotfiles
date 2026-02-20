@@ -136,10 +136,3 @@ fi
 if [ -f ~/.bash_completion ]; then
     . ~/.bash_completion
 fi
-
-{{ if .addons.motd -}}
-# --- MOTD ---
-if [[ -f "$HOME/.local/bin/motd" ]]; then
-    "$HOME/.local/bin/motd"
-fi
-{{ end -}}

@@ -1,0 +1,69 @@
+#!/bin/bash
+# motd-static - Display lightweight message of the day with system info only
+# Used to generate /etc/motd on macOS and Linux systems without update-motd.d
+
+# Colors and formatting
+BOLD='\033[1m'
+DIM='\033[2m'
+CYAN='\033[36m'
+BLUE='\033[34m'
+WHITE='\033[97m'
+RESET='\033[0m'
+
+# Gather system info
+if [[ -f /etc/os-release ]]; then
+    os_name=$(source /etc/os-release && echo "$PRETTY_NAME")
+elif [[ "$(uname)" == "Darwin" ]]; then
+    os_name="macOS $(sw_vers -productVersion)"
+else
+    os_name=$(uname -s)
+fi
+
+arch=$(uname -m)
+hostname_str=$(hostname -s 2>/dev/null || hostname)
+user_name=$(whoami)
+
+# Uptime
+if [[ "$(uname)" == "Darwin" ]]; then
+    boot_time=$(sysctl -n kern.boottime | sed 's/.*{ sec = \([0-9]*\).*/\1/')
+    now=$(date +%s)
+    uptime_secs=$((now - boot_time))
+    uptime_days=$((uptime_secs / 86400))
+    uptime_hours=$(( (uptime_secs % 86400) / 3600 ))
+    uptime_mins=$(( (uptime_secs % 3600) / 60 ))
+    uptime_str="${uptime_days}d ${uptime_hours}h ${uptime_mins}m"
+else
+    uptime_str=$(uptime -p 2>/dev/null | sed 's/up //' || uptime | awk -F'( |,|:)+' '{print $6" days, "$8"h "$9"m"}')
+fi
+
+# Fixed 68-character width box with centered text
+box_width=68
+max_text_len=$((box_width - 4))
+welcome_text="Welcome to ${hostname_str}"
+if [[ ${#welcome_text} -gt $max_text_len ]]; then
+    welcome_text="${welcome_text:0:$((max_text_len - 3))}..."
+fi
+text_len=${#welcome_text}
+total_padding=$((box_width - 2 - text_len))
+left_pad=$((total_padding / 2))
+right_pad=$((total_padding - left_pad))
+left_spaces=$(printf '%*s' $left_pad '')
+right_spaces=$(printf '%*s' $right_pad '')
+border=""
+for ((i=0; i<box_width-2; i++)); do border+="═"; done
+
+# Generate the static MOTD
+cat << EOF
+
+${CYAN}╔${border}╗${RESET}
+${CYAN}║${RESET}${left_spaces}${BOLD}${WHITE}${welcome_text}${RESET}${right_spaces}${CYAN}║${RESET}
+${CYAN}╚${border}╝${RESET}
+
+  ${BOLD}${BLUE}SYSTEM${RESET}
+  ├─ ${DIM}OS${RESET}           ${os_name}
+  ├─ ${DIM}User${RESET}         ${user_name}
+  ├─ ${DIM}Arch${RESET}         ${arch}
+  └─ ${DIM}Uptime${RESET}       ${uptime_str}
+
+${DIM}────────────────────────────────────────────────────────────────────────${RESET}
+EOF
