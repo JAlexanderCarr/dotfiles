@@ -159,6 +159,7 @@ data:
   addons:
     motd: true
     ai: true
+    vscode: true
 EOF
 
 check_file "$HOME/.config/chezmoi/chezmoi.yaml" "chezmoi config"
@@ -301,6 +302,12 @@ if [[ "$SKIP_PACKAGES" == "false" ]]; then
 
     # MOTD static script
     check_file "$HOME/.local/bin/motd-static" "MOTD static script"
+
+    # VSCode configuration
+    VSCODE_CONFIG_DIR="$HOME/.config/Code/User"
+    check_dir "$VSCODE_CONFIG_DIR" "VSCode config directory"
+    check_file "$VSCODE_CONFIG_DIR/settings.json" "VSCode settings.json"
+    check_file "$VSCODE_CONFIG_DIR/keybindings.json" "VSCode keybindings.json"
 else
     log_info "Skipping package installation checks (--skip-packages)"
 fi

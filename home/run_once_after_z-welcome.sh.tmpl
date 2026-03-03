@@ -17,7 +17,7 @@ CLR_CYAN='\033[36m'
 
 printf "\n"
 printf "${CLR_BOLD}${CLR_CYAN}╔═══════════════════════════════════════════════════════════╗${CLR_RESET}\n"
-printf "${CLR_BOLD}${CLR_CYAN}║${CLR_RESET}          ${CLR_BOLD}chezmoi dotfiles installation complete!${CLR_RESET}          ${CLR_BOLD}${CLR_CYAN}║${CLR_RESET}\n"
+printf "${CLR_BOLD}${CLR_CYAN}║${CLR_RESET}          ${CLR_BOLD}chezmoi dotfiles installation complete${CLR_RESET}           ${CLR_BOLD}${CLR_CYAN}║${CLR_RESET}\n"
 printf "${CLR_BOLD}${CLR_CYAN}╚═══════════════════════════════════════════════════════════╝${CLR_RESET}\n"
 printf "\n"
 printf "${CLR_BOLD}${CLR_BLUE}▸${CLR_RESET} ${CLR_BOLD}User${CLR_RESET}\n"
@@ -76,6 +76,11 @@ printf "  ${CLR_DIM}○ Custom MOTD${CLR_RESET}\n"
 printf "  ${CLR_GREEN}✓${CLR_RESET} AI Agent Configs\n"
 {{- else }}
 printf "  ${CLR_DIM}○ AI Agent Configs${CLR_RESET}\n"
+{{- end }}
+{{- if .addons.vscode }}
+printf "  ${CLR_GREEN}✓${CLR_RESET} VSCode Config\n"
+{{- else }}
+printf "  ${CLR_DIM}○ VSCode Config${CLR_RESET}\n"
 {{- end }}
 printf "\n"
 printf "${CLR_BOLD}${CLR_BLUE}▸${CLR_RESET} ${CLR_BOLD}Quick Commands${CLR_RESET}\n"

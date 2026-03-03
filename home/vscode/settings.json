@@ -1,0 +1,34 @@
+{
+    // Editor specific config
+    "workbench.startupEditor": "none",
+    "editor.fontFamily": "'FiraMono Nerd Font', Menlo, Monaco, 'Courier New', monospace",
+    "editor.rulers": [80],
+    "workbench.editor.enablePreview": true,
+    "explorer.confirmDelete": false,
+    "explorer.confirmDragAndDrop": false,
+    "terminal.integrated.defaultLocation": "editor",
+    "terminal.integrated.defaultProfile.osx": "zsh",
+    "terminal.integrated.defaultProfile.linux": "zsh",
+    "terminal.integrated.stickyScroll.enabled": false,
+    "terminal.integrated.allowedLinkSchemes": [
+        "file",
+        "http",
+        "https",
+        "mailto",
+        "vscode",
+        "vscode-insiders",
+        "docker-desktop"
+    ],
+    "chat.disableAIFeatures": true,
+    "workbench.editor.tabSizing": "shrink",
+
+    // Visuals
+    "workbench.colorTheme": "GitHub Dark Default",
+    "workbench.iconTheme": "material-icon-theme",
+
+    // Extensions - Go
+    "go.toolsManagement.autoUpdate": true,
+
+    // Extensions - Claude
+    "claudeCode.preferredLocation": "panel"
+}

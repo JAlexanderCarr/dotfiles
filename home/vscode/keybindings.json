@@ -1,0 +1,77 @@
+[
+    // Shift + Enter is newline in a terminal
+    {
+        "key": "shift+enter",
+        "command": "workbench.action.terminal.sendSequence",
+        "args": {
+            "text": "\u001b\r"
+        },
+        "when": "terminalFocus"
+    },
+
+    // Open Claude code window
+    {
+        "key": "shift+cmd+i",
+        "command": "claude-vscode.editor.openLast"
+    },
+
+    // Maximize tab
+    {
+        "key": "shift+cmd+m",
+        "command": "workbench.action.toggleMaximizeEditorGroup"
+    },
+
+    // Tab movement
+    {
+        "key": "ctrl+cmd+up",
+        "command": "workbench.action.moveEditorToAboveGroup"
+    },
+    {
+        "key": "ctrl+cmd+down",
+        "command": "workbench.action.moveEditorToBelowGroup"
+    },
+
+    // New terminal tab
+    {
+        "key": "cmd+t",
+        "command": "workbench.action.terminal.new",
+        "when": "terminalProcessSupported || terminalWebExtensionContributedProfile"
+    },
+
+    // Remove conflicting keybinds
+    {
+        "key": "cmd+k cmd+m",
+        "command": "-workbench.action.toggleMaximizeEditorGroup",
+        "when": "editorPartMaximizedEditorGroup || editorPartMultipleEditorGroups"
+    },
+    {
+        "key": "shift+cmd+m",
+        "command": "-workbench.actions.view.problems",
+        "when": "workbench.panel.markers.view.active"
+    },
+    {
+        "key": "ctrl+cmd+up",
+        "command": "-workbench.action.terminal.resizePaneUp",
+        "when": "terminalFocus && terminalHasBeenCreated || terminalFocus && terminalProcessSupported"
+    },
+    {
+        "key": "ctrl+cmd+down",
+        "command": "-workbench.action.terminal.resizePaneDown",
+        "when": "terminalFocus && terminalHasBeenCreated || terminalFocus && terminalProcessSupported"
+    },
+    {
+        "key": "ctrl+cmd+right",
+        "command": "-workbench.action.terminal.resizePaneRight",
+        "when": "terminalFocus && terminalHasBeenCreated || terminalFocus && terminalProcessSupported"
+    },
+    {
+        "key": "ctrl+cmd+left",
+        "command": "-workbench.action.terminal.resizePaneLeft",
+        "when": "terminalFocus && terminalHasBeenCreated || terminalFocus && terminalProcessSupported"
+    },
+    {
+        "key": "ctrl+shift+`",
+        "command": "-workbench.action.terminal.new",
+        "when": "terminalProcessSupported || terminalWebExtensionContributedProfile"
+    }
+]

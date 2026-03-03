@@ -29,6 +29,7 @@
 {{- $installFonts := promptBoolOnce . "addons.fonts" "Fonts" false }}
 {{- $installMotd := promptBoolOnce . "addons.motd" "Custom MOTD" true }}
 {{- $installAI := promptBoolOnce . "addons.ai" "AI Agent Configs" true }}
+{{- $installVscode := promptBoolOnce . "addons.vscode" "VSCode Config" true }}
 
 data:
   name: {{ $name | quote }}
@@ -47,3 +48,4 @@ data:
     fonts: {{ $installFonts }}
     motd: {{ $installMotd }}
     ai: {{ $installAI }}
+    vscode: {{ $installVscode }}

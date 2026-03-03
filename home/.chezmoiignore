@@ -12,6 +12,9 @@ build/
 # This prevents chezmoi from trying to manage them in the system font directory
 fonts/
 
+# VSCode config files are installed directly by the install script
+vscode/
+
 # Editor and IDE files
 *.swp
 *.swo
