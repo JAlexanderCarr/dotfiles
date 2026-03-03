@@ -4,6 +4,7 @@
 # Re-runs automatically when source config files change.
 # {{ include "vscode/settings.json" | sha256sum }}
 # {{ include "vscode/keybindings.json" | sha256sum }}
+# {{ include "vscode/extensions.txt" | sha256sum }}
 
 source "${HOME}/.local/bin/chezmoi-log-helper.sh" 2>/dev/null || {
     mkdir -p "${HOME}/.local/log/chezmoi"
@@ -20,6 +21,31 @@ exit 0
 {{- end }}
 
 set -euo pipefail
+
+# Locate the VSCode CLI — checks PATH first, then OS-specific fallback locations
+# Returns the path to `code` or exits with 1 if not found
+find_code_cli() {
+    if command -v code &>/dev/null; then
+        command -v code
+        return 0
+    fi
+    # macOS: app bundle binary works even without "Install code in PATH"
+    if [[ "$(uname -s)" == "Darwin" ]]; then
+        local bundle_code="/Applications/Visual Studio Code.app/Contents/Resources/app/bin/code"
+        if [[ -x "$bundle_code" ]]; then
+            echo "$bundle_code"
+            return 0
+        fi
+    fi
+    # Linux: common install locations
+    for candidate in /usr/bin/code /usr/local/bin/code /snap/bin/code /usr/share/code/bin/code; do
+        if [[ -x "$candidate" ]]; then
+            echo "$candidate"
+            return 0
+        fi
+    done
+    return 1
+}
 
 # Locate vscode source files (same pattern as fonts script)
 CHEZMOI_SOURCE="${CHEZMOI_SOURCE_DIR:-$HOME/.local/share/chezmoi}"
@@ -66,3 +92,23 @@ fi
 
 log_silent "VSCode configuration complete"
 print_done "VSCode configuration installed"
+
+# Install extensions
+EXTENSIONS_FILE="$VSCODE_SOURCE/extensions.txt"
+if [[ -f "$EXTENSIONS_FILE" ]]; then
+    CODE_CLI="$(find_code_cli 2>/dev/null || true)"
+    if [[ -n "$CODE_CLI" ]]; then
+        log_section "VSCode Extensions"
+        print_header "VSCode Extensions"
+        while IFS= read -r ext || [[ -n "$ext" ]]; do
+            [[ -z "$ext" || "$ext" == \#* ]] && continue
+            with_spinner "Installing $ext" \
+                "$CODE_CLI" --install-extension "$ext" --force
+            print_done "$ext"
+            log_silent "Installed extension: $ext"
+        done < "$EXTENSIONS_FILE"
+    else
+        log_silent "VSCode CLI not found — skipping extension install"
+        print_done "Skipped extensions (VSCode CLI not found)"
+    fi
+fi

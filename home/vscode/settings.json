@@ -21,6 +21,7 @@
     ],
     "chat.disableAIFeatures": true,
     "workbench.editor.tabSizing": "shrink",
+    "workbench.editor.editorActionsLocation": "titleBar",
 
     // Visuals
     "workbench.colorTheme": "GitHub Dark Default",
