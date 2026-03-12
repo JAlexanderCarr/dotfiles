@@ -20,3 +20,5 @@ redhat.vscode-yaml
 
 # Productivity
 wayou.vscode-todo-highlight
+gruntfuggly.todo-tree
+streetsidesoftware.code-spell-checker
