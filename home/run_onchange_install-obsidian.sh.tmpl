@@ -1,0 +1,84 @@
+#!/bin/bash
+# chezmoi:template:left-delimiter="{{" right-delimiter="}}"
+# Install Obsidian vault configuration (settings, plugins list, templates)
+# Re-runs automatically when source config files change.
+# {{ include "obsidian/app.json" | sha256sum }}
+# {{ include "obsidian/community-plugins.json" | sha256sum }}
+# {{ include "obsidian/core-plugins.json" | sha256sum }}
+# {{ include "obsidian/appearance.json" | sha256sum }}
+
+source "${HOME}/.local/bin/chezmoi-log-helper.sh" 2>/dev/null || {
+    mkdir -p "${HOME}/.local/log/chezmoi"
+    CHEZMOI_LOG_FILE="${HOME}/.local/log/chezmoi/install-$(date +%Y%m%d-%H%M%S).log"
+    print_header() { printf "\n\033[1;34m▸\033[0m \033[1m%s\033[0m\n" "$1"; }
+    print_done() { printf "  \033[32m✓\033[0m %s\n" "$1"; }
+    print_fail() { printf "  \033[31m✗\033[0m %s\n" "$1"; }
+    with_spinner() { shift; "$@" >> "$CHEZMOI_LOG_FILE" 2>&1; }
+    log_silent() { :; }; log_section() { :; }
+}
+
+{{- if not .addons.obsidian }}
+exit 0
+{{- end }}
+
+set -euo pipefail
+
+VAULT_PATH="{{ .obsidian.vault_path }}"
+OBSIDIAN_DIR="${VAULT_PATH}/.obsidian"
+TEMPLATES_DIR="${VAULT_PATH}/Templates"
+
+# Locate obsidian source files
+CHEZMOI_SOURCE="${CHEZMOI_SOURCE_DIR:-$HOME/.local/share/chezmoi}"
+OBSIDIAN_SOURCE="$CHEZMOI_SOURCE/obsidian"
+if [[ ! -d "$OBSIDIAN_SOURCE" ]]; then
+    OBSIDIAN_SOURCE="$CHEZMOI_SOURCE/home/obsidian"
+fi
+
+log_section "Obsidian Configuration"
+print_header "Obsidian Configuration"
+log_silent "Obsidian source: $OBSIDIAN_SOURCE"
+log_silent "Vault path: $VAULT_PATH"
+
+# Create vault and .obsidian directories if they don't exist
+mkdir -p "$OBSIDIAN_DIR" >> "$CHEZMOI_LOG_FILE" 2>&1
+mkdir -p "$TEMPLATES_DIR" >> "$CHEZMOI_LOG_FILE" 2>&1
+
+# Copy a config file only if it does not already exist in the vault.
+# This preserves any customizations the user has made since initial setup.
+copy_if_new() {
+    local src="$1"
+    local dest="$2"
+    local name
+    name="$(basename "$dest")"
+    if [[ ! -f "$dest" ]]; then
+        with_spinner "Installing $name" cp "$src" "$dest"
+        print_done "$name installed"
+        log_silent "Copied $name to $dest"
+    else
+        log_silent "Skipped $name (already exists)"
+    fi
+}
+
+# Copy .obsidian config files
+for config_file in app.json hotkeys.json appearance.json core-plugins.json community-plugins.json; do
+    if [[ -f "$OBSIDIAN_SOURCE/$config_file" ]]; then
+        copy_if_new "$OBSIDIAN_SOURCE/$config_file" "$OBSIDIAN_DIR/$config_file"
+    else
+        print_fail "$config_file not found at $OBSIDIAN_SOURCE"
+        log_silent "Missing $OBSIDIAN_SOURCE/$config_file"
+    fi
+done
+
+# Copy vault templates
+TEMPLATES_SOURCE="$OBSIDIAN_SOURCE/templates"
+if [[ -d "$TEMPLATES_SOURCE" ]]; then
+    log_section "Obsidian Templates"
+    print_header "Obsidian Templates"
+    while IFS= read -r -d '' template_file; do
+        template_name="$(basename "$template_file")"
+        copy_if_new "$template_file" "$TEMPLATES_DIR/$template_name"
+    done < <(find "$TEMPLATES_SOURCE" -maxdepth 1 -name "*.md" -print0)
+fi
+
+log_silent "Obsidian configuration complete"
+print_done "Obsidian configuration applied to $VAULT_PATH"
