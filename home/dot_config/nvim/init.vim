@@ -74,3 +74,9 @@ set number
 
 " Enable filetype detection, plugins, and indentation
 filetype plugin indent on
+
+" Show guide column at 80 chars
+set colorcolumn=80
+
+" Enforce 80-char textwidth for all filetypes — overrides built-in ftplugins
+autocmd FileType * setlocal textwidth=80
