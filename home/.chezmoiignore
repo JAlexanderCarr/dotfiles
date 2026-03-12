@@ -15,6 +15,11 @@ fonts/
 # VSCode config files are installed directly by the install script
 vscode/
 
+# Obsidian config files are installed directly by the install script
+{{ if not .addons.obsidian }}
+obsidian/
+{{ end }}
+
 # Editor and IDE files
 *.swp
 *.swo

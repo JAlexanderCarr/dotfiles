@@ -87,6 +87,11 @@ printf "  ${CLR_GREEN}✓${CLR_RESET} VSCode Config\n"
 {{- else }}
 printf "  ${CLR_DIM}○ VSCode Config${CLR_RESET}\n"
 {{- end }}
+{{- if .addons.obsidian }}
+printf "  ${CLR_GREEN}✓${CLR_RESET} Obsidian Vault Config\n"
+{{- else }}
+printf "  ${CLR_DIM}○ Obsidian Vault Config${CLR_RESET}\n"
+{{- end }}
 printf "\n"
 printf "${CLR_BOLD}${CLR_BLUE}▸${CLR_RESET} ${CLR_BOLD}Quick Commands${CLR_RESET}\n"
 printf "  ${CLR_DIM}Update dotfiles:${CLR_RESET}    chezmoi update\n"
