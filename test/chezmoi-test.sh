@@ -216,6 +216,10 @@ check_file "$HOME/.aliases" "aliases"
 check_file "$HOME/.bash_completion" "bash_completion"
 check_file "$HOME/.zsh_completion" "zsh_completion"
 
+# npm configuration
+check_file "$HOME/.npmrc" "npmrc"
+check_file_contains "$HOME/.npmrc" "min-release-age=7" "npmrc has min-release-age=7"
+
 # ============================================================================
 # VERIFY PACKAGE INSTALLATIONS (if not skipped)
 # ============================================================================

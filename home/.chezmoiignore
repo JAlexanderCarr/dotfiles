@@ -51,3 +51,8 @@ vscode/
 {{ if not .packages.lima }}
 .config/lima/
 {{ end }}
+
+# npm config (conditional)
+{{ if not .packages.node }}
+.npmrc
+{{ end }}
