@@ -1,0 +1,15 @@
+# npm configuration — managed by chezmoi
+
+# Security: delay installs of packages published within the last 7 days
+min-release-age=7
+
+# Author defaults for `npm init`
+init-author-name={{ .name }}
+init-author-email={{ .email }}
+
+# Suppress noise
+fund=false
+update-notifier=false
+
+# Audit on install (default, but explicit)
+audit=true
