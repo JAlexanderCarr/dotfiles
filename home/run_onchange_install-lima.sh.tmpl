@@ -1,0 +1,93 @@
+#!/bin/bash
+# chezmoi:template:left-delimiter="{{" right-delimiter="}}"
+# Install Lima - optional, controlled by chezmoi config
+# macOS: installed via Homebrew
+# Linux: installed from GitHub releases tarball
+
+# Source the logging helper (installed by chezmoi before scripts run)
+source "${HOME}/.local/bin/chezmoi-log-helper.sh" 2>/dev/null || {
+    mkdir -p "${HOME}/.local/log/chezmoi"
+    CHEZMOI_LOG_FILE="${HOME}/.local/log/chezmoi/install-$(date +%Y%m%d-%H%M%S).log"
+    print_header() { printf "\n\033[1;34m▸\033[0m \033[1m%s\033[0m\n" "$1"; }
+    print_done() { printf "  \033[32m✓\033[0m %s\n" "$1"; }
+    print_fail() { printf "  \033[31m✗\033[0m %s\n" "$1"; }
+    with_spinner() { shift; "$@" >> "$CHEZMOI_LOG_FILE" 2>&1; }
+    log_silent() { :; }; log_section() { :; }
+}
+
+{{- if not .packages.lima }}
+exit 0
+{{- end }}
+
+set -euo pipefail
+
+OS="$(uname -s | tr '[:upper:]' '[:lower:]')"
+ARCH="$(uname -m)"
+
+LIMA_VERSION="1.0.3"
+
+# Normalize architecture
+ARCH_STD="$ARCH"
+if [[ "$ARCH_STD" == "x86_64" || "$ARCH_STD" == "amd64" ]]; then
+    ARCH_STD="x86_64"
+elif [[ "$ARCH_STD" == "arm64" || "$ARCH_STD" == "aarch64" ]]; then
+    ARCH_STD="aarch64"
+else
+    print_fail "Unsupported architecture: $ARCH_STD"
+    exit 1
+fi
+
+log_section "Lima Installation"
+print_header "Lima"
+
+install_lima_macos() {
+    if command -v limactl > /dev/null 2>&1; then
+        log_silent "Upgrading lima via Homebrew"
+        with_spinner "Upgrading Lima ${LIMA_VERSION}" brew upgrade lima
+    else
+        log_silent "Installing lima via Homebrew"
+        with_spinner "Installing Lima ${LIMA_VERSION}" brew install lima
+    fi
+
+    # Additional guest agents for non-default Linux distributions
+    if brew list lima-additional-guestagents &>/dev/null; then
+        log_silent "Upgrading lima-additional-guestagents via Homebrew"
+        with_spinner "Upgrading lima-additional-guestagents" brew upgrade lima-additional-guestagents
+    else
+        log_silent "Installing lima-additional-guestagents via Homebrew"
+        with_spinner "Installing lima-additional-guestagents" brew install lima-additional-guestagents
+    fi
+
+    # QEMU required to run x86_64 VMs on Apple Silicon
+    if command -v qemu-system-x86_64 > /dev/null 2>&1; then
+        log_silent "Upgrading qemu via Homebrew"
+        with_spinner "Upgrading QEMU" brew upgrade qemu
+    else
+        log_silent "Installing qemu via Homebrew"
+        with_spinner "Installing QEMU" brew install qemu
+    fi
+}
+
+install_lima_linux() {
+    local tarball="lima-${LIMA_VERSION}-Linux-${ARCH_STD}.tar.gz"
+    local url="https://github.com/lima-vm/lima/releases/download/v${LIMA_VERSION}/${tarball}"
+
+    # Clean up old installation if present
+    log_silent "Removing old lima installation if present"
+    sudo rm -f /usr/local/bin/limactl >> "$CHEZMOI_LOG_FILE" 2>&1 || true
+    sudo rm -rf /usr/local/share/lima >> "$CHEZMOI_LOG_FILE" 2>&1 || true
+
+    log_silent "Downloading Lima ${LIMA_VERSION}"
+    curl -fsSL -o "/tmp/${tarball}" "$url" >> "$CHEZMOI_LOG_FILE" 2>&1
+
+    with_spinner "Installing Lima ${LIMA_VERSION}" sudo tar xzf "/tmp/${tarball}" -C /usr/local
+    rm -f "/tmp/${tarball}" >> "$CHEZMOI_LOG_FILE" 2>&1
+}
+
+if [[ "$OS" == "darwin" ]]; then
+    install_lima_macos
+else
+    install_lima_linux
+fi
+
+print_done "Lima installed"

@@ -50,6 +50,11 @@ printf "  ${CLR_GREEN}✓${CLR_RESET} Kubernetes tools\n"
 {{- else }}
 printf "  ${CLR_DIM}○ Kubernetes tools${CLR_RESET}\n"
 {{- end }}
+{{- if .packages.lima }}
+printf "  ${CLR_GREEN}✓${CLR_RESET} Lima VMs\n"
+{{- else }}
+printf "  ${CLR_DIM}○ Lima VMs${CLR_RESET}\n"
+{{- end }}
 {{- if .packages.node }}
 printf "  ${CLR_GREEN}✓${CLR_RESET} Node\n"
 {{- else }}

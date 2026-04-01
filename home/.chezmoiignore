@@ -46,3 +46,8 @@ vscode/
 .local/bin/motd
 .local/bin/motd-static
 {{ end }}
+
+# Lima VM templates (conditional)
+{{ if not .packages.lima }}
+.config/lima/
+{{ end }}

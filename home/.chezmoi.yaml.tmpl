@@ -19,6 +19,7 @@
 {{- $installDocker := promptBoolOnce . "packages.docker" "Docker" false -}}
 {{- $installGo := promptBoolOnce . "packages.go" "Go" true -}}
 {{- $installKubernetes := promptBoolOnce . "packages.kubernetes" "Kubernetes tools" true -}}
+{{- $installLima := promptBoolOnce . "packages.lima" "Lima VMs" false -}}
 {{- $installNode := promptBoolOnce . "packages.node" "Node" true -}}
 {{- $installPython := promptBoolOnce . "packages.python" "Python" true -}}
 
@@ -42,6 +43,7 @@ data:
     docker: {{ $installDocker }}
     go: {{ $installGo }}
     kubernetes: {{ $installKubernetes }}
+    lima: {{ $installLima }}
     node: {{ $installNode }}
     python: {{ $installPython }}
   addons:

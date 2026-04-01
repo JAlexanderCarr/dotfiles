@@ -1,0 +1,73 @@
+# chezmoi:template:left-delimiter="{{" right-delimiter="}}"
+# Lima VM template: x86_64 development environment
+# Usage: limactl start ~/.config/lima/dev-x86_64.yaml
+
+vmType: {{ if eq .chezmoi.os "darwin" }}vz{{ else }}qemu{{ end }}
+
+os: Linux
+arch: x86_64
+
+images:
+  - location: "https://cloud-images.ubuntu.com/releases/24.04/release/ubuntu-24.04-server-cloudimg-amd64.img"
+    arch: x86_64
+
+cpus: 4
+memory: "8GiB"
+disk: "50GiB"
+
+mounts:
+  - location: "~"
+    writable: true
+  - location: "/tmp/lima"
+    writable: true
+
+ssh:
+  forwardAgent: true
+
+{{ if eq .chezmoi.os "darwin" -}}
+rosetta:
+  enabled: true
+  binfmt: true
+{{ end -}}
+
+provision:
+  - mode: system
+    script: |
+      #!/bin/bash
+      set -euo pipefail
+      apt-get update -qq
+      apt-get install -y -qq curl git make build-essential unzip
+  - mode: user
+    script: |
+      #!/bin/bash
+      set -euo pipefail
+
+      # Install chezmoi
+      sh -c "$(curl -fsLS get.chezmoi.io)" -- -b "${HOME}/.local/bin"
+
+      # Write chezmoi config with host values
+      mkdir -p "${HOME}/.config/chezmoi"
+      cat > "${HOME}/.config/chezmoi/chezmoi.yaml" <<'CHEZMOI_EOF'
+      data:
+        name: {{ .name | quote }}
+        email: {{ .email | quote }}
+        githubUsername: {{ .githubUsername | quote }}
+        sshSigningKey: {{ .sshSigningKey | quote }}
+        packages:
+          devtools: {{ .packages.devtools }}
+          neovim: {{ .packages.neovim }}
+          docker: {{ .packages.docker }}
+          go: {{ .packages.go }}
+          kubernetes: {{ .packages.kubernetes }}
+          lima: false
+          node: {{ .packages.node }}
+          python: {{ .packages.python }}
+        addons:
+          fonts: {{ .addons.fonts }}
+          motd: {{ .addons.motd }}
+          ai: {{ .addons.ai }}
+          vscode: {{ .addons.vscode }}
+      CHEZMOI_EOF
+
+      # Apply dotfiles
+      "${HOME}/.local/bin/chezmoi" init --apply "https://github.com/{{ .githubUsername }}/dotfiles"
