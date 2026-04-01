@@ -141,7 +141,7 @@ log_info "Configuring chezmoi..."
 mkdir -p "$HOME/.config/chezmoi"
 
 # Create test configuration
-# Enable all packages for comprehensive CI testing
+# Enable packages that can be tested in a container (docker, fonts, and lima binary install are excluded)
 cat > "$HOME/.config/chezmoi/chezmoi.yaml" << 'EOF'
 data:
   name: "Test User"
@@ -150,13 +150,15 @@ data:
   sshSigningKey: "~/.ssh/id_ed25519.pub"
   packages:
     devtools: true
-    docker: true
+    docker: false
     go: true
     kubernetes: true
+    lima: true
     node: true
+    neovim: true
     python: true
-    fonts: true
   addons:
+    fonts: false
     motd: true
     ai: true
     vscode: true
@@ -228,15 +230,6 @@ if [[ "$SKIP_PACKAGES" == "false" ]]; then
         check_fail "Devtools not fully installed"
     fi
 
-    # Docker - note: Docker may not actually run in containers, but the install script should complete
-    # On Amazon Linux, Docker CE is not supported so the script exits gracefully
-    if command -v docker &>/dev/null || [[ -f /etc/system-release ]] && grep -q "Amazon Linux" /etc/system-release 2>/dev/null; then
-        check_pass "Docker installation completed (or skipped on Amazon Linux)"
-    else
-        # Docker install script ran but docker command not available (may need daemon)
-        check_pass "Docker installation script executed"
-    fi
-
     # Go installation (via goenv)
     export GOENV_ROOT="$HOME/.goenv"
     export PATH="$GOENV_ROOT/bin:$GOENV_ROOT/shims:$PATH:/usr/local/bin:/usr/local/go/bin"
@@ -281,12 +274,16 @@ if [[ "$SKIP_PACKAGES" == "false" ]]; then
         check_fail "kubectx is not installed"
     fi
 
-    # Fonts installation
-    if [[ -d "/usr/share/fonts" ]] || [[ -d "$HOME/Library/Fonts" ]] || [[ -d "$HOME/.local/share/fonts" ]]; then
-        check_pass "Fonts directory exists"
-    else
-        check_fail "Fonts directory not found"
-    fi
+    # Lima - validate rendered config files with limactl
+    check_file "$HOME/.config/lima/dev-arm64.yaml" "Lima ARM64 VM template"
+    check_file "$HOME/.config/lima/dev-x86_64.yaml" "Lima x86_64 VM template"
+    for lima_config in "$HOME/.config/lima/dev-arm64.yaml" "$HOME/.config/lima/dev-x86_64.yaml"; do
+        if limactl validate "$lima_config" &>/dev/null; then
+            check_pass "$(basename "$lima_config") is valid (limactl validate)"
+        else
+            check_fail "$(basename "$lima_config") failed limactl validate"
+        fi
+    done
 
     # MOTD dynamic script
     if [[ -f "$HOME/.local/bin/motd" ]]; then
