@@ -11,6 +11,7 @@ pkief.material-icon-theme
 
 # Language support
 golang.go
+hashicorp.terraform
 ms-python.debugpy
 ms-python.python
 ms-python.vscode-pylance
