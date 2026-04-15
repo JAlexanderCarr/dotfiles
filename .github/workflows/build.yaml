@@ -14,7 +14,9 @@ jobs:
     name: Build Ubuntu Container (multi-arch)
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v6
+      uses: actions/checkout@v4
+    - name: Set up QEMU
+      uses: docker/setup-qemu-action@v3
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v4
     - name: Login to GHCR
@@ -36,7 +38,9 @@ jobs:
     name: Build Amazon Container (multi-arch)
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v6
+      uses: actions/checkout@v4
+    - name: Set up QEMU
+      uses: docker/setup-qemu-action@v3
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v4
     - name: Login to GHCR
@@ -52,6 +56,34 @@ jobs:
           -t ghcr.io/${{ github.repository }}/amazon-dotfiles:latest \
           --push .
 
+  # Build Dev Container
+  build-dev:
+    runs-on: ubuntu-latest
+    name: Build Dev Container
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+    - name: Set up QEMU
+      uses: docker/setup-qemu-action@v3
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v4
+    - name: Login to GHCR
+      uses: docker/login-action@v4
+      with:
+        registry: ghcr.io
+        username: ${{ github.actor }}
+        password: ${{ secrets.GHCR_TOKEN }}
+    - name: Build and push dev image (single-arch)
+      uses: docker/build-push-action@v6
+      with:
+        context: .
+        file: ./build/Dockerfile.dev
+        platforms: linux/amd64,linux/arm64
+        push: true
+        tags: ghcr.io/${{ github.repository }}:dev-ci-${{ github.run_id }}
+        cache-from: type=gha
+        cache-to: type=gha,mode=max
+
   # Test Ubuntu Container
   test-ubuntu:
     runs-on: ubuntu-latest
@@ -59,7 +91,7 @@ jobs:
     needs: build-ubuntu
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v6
+      uses: actions/checkout@v4
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v4
     - name: Login to GHCR
@@ -82,7 +114,7 @@ jobs:
     needs: build-amazon
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v6
+      uses: actions/checkout@v4
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v4
     - name: Login to GHCR
@@ -98,10 +130,31 @@ jobs:
     - name: Run chezmoi installation test
       run: make test-amazon
 
+  # Test Dev Container
+  test-dev:
+    runs-on: ubuntu-latest
+    name: Test Dev Container
+    needs: build-dev
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+    - name: Login to GHCR
+      uses: docker/login-action@v4
+      with:
+        registry: ghcr.io
+        username: ${{ github.actor }}
+        password: ${{ secrets.GHCR_TOKEN }}
+    - name: Load dev image
+      run: |
+        docker pull ghcr.io/${{ github.repository }}:dev-ci-${{ github.run_id }}
+        docker tag ghcr.io/${{ github.repository }}:dev-ci-${{ github.run_id }} dev-dotfiles:latest
+    - name: Run dev container smoke tests
+      run: make test-dev
+
   # Test Summary
   test-summary:
     runs-on: ubuntu-latest
-    needs: [test-ubuntu, test-amazon]
+    needs: [test-ubuntu, test-amazon, test-dev]
     if: always()
     steps:
     - name: Print and Summarize Test Results
@@ -117,6 +170,11 @@ jobs:
         else
           AMAZON_ICON="❌"
         fi
+        if [ "${{ needs.test-dev.result }}" = "success" ]; then
+          DEV_ICON="✅"
+        else
+          DEV_ICON="❌"
+        fi
 
         # Print to console
         echo "================================"
@@ -125,6 +183,7 @@ jobs:
         echo ""
         echo "Ubuntu:  $UBUNTU_ICON ${{ needs.test-ubuntu.result }}"
         echo "Amazon:  $AMAZON_ICON ${{ needs.test-amazon.result }}"
+        echo "Dev:     $DEV_ICON ${{ needs.test-dev.result }}"
         echo ""
         echo "================================"
 
@@ -135,9 +194,10 @@ jobs:
         echo "|-----------|--------|--------|" >> $GITHUB_STEP_SUMMARY
         echo "| Ubuntu | $UBUNTU_ICON | ${{ needs.test-ubuntu.result }} |" >> $GITHUB_STEP_SUMMARY
         echo "| Amazon | $AMAZON_ICON | ${{ needs.test-amazon.result }} |" >> $GITHUB_STEP_SUMMARY
+        echo "| Dev | $DEV_ICON | ${{ needs.test-dev.result }} |" >> $GITHUB_STEP_SUMMARY
 
     - name: Check for failures
-      if: needs.test-ubuntu.result != 'success' || needs.test-amazon.result != 'success'
+      if: needs.test-ubuntu.result != 'success' || needs.test-amazon.result != 'success' || needs.test-dev.result != 'success'
       run: |
         echo "One or more tests failed!"
         exit 1
