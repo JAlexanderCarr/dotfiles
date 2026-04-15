@@ -1,0 +1,151 @@
+name: Weekly Dev Container Refresh
+
+on:
+  schedule:
+    - cron: '0 9 * * 1'  # Monday 09:00 UTC = 1am PST / 2am PDT
+  workflow_dispatch: {}   # manual trigger for testing
+
+jobs:
+
+  # Detect changes and compute the next CalVer
+  check:
+    runs-on: ubuntu-latest
+    outputs:
+      changed: ${{ steps.changed.outputs.changed }}
+      version: ${{ steps.ver.outputs.version }}
+      month: ${{ steps.ver.outputs.month }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0   # full history for git tag listing and diff
+
+      - name: Check if image inputs changed since last release
+        id: changed
+        run: |
+          LAST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
+          if [ -z "$LAST_TAG" ]; then
+            echo "changed=true" >> $GITHUB_OUTPUT
+            echo "No previous release — will build." >> $GITHUB_STEP_SUMMARY
+          else
+            DIFF=$(git diff --name-only "${LAST_TAG}" HEAD -- build/Dockerfile.dev home/)
+            if [ -n "$DIFF" ]; then
+              echo "changed=true" >> $GITHUB_OUTPUT
+              printf '### Changed files since `%s`\n```\n%s\n```\n' "${LAST_TAG}" "${DIFF}" >> $GITHUB_STEP_SUMMARY
+            else
+              echo "changed=false" >> $GITHUB_OUTPUT
+              echo "No changes to \`build/Dockerfile.dev\` or \`home/\` since \`${LAST_TAG}\` — skipping release." >> $GITHUB_STEP_SUMMARY
+            fi
+          fi
+
+      - name: Generate CalVer version
+        id: ver
+        if: steps.changed.outputs.changed == 'true'
+        run: |
+          BASE="$(date -u +%Y.%m)"
+          # Find the highest patch for the current YYYY.MM — resets to 0 on month/year rollover
+          LAST=$(git tag --list "${BASE}.*" | sort -t. -k3 -n | tail -1)
+          if [ -z "$LAST" ]; then
+            PATCH=0
+          else
+            LAST_PATCH="${LAST##*.}"
+            PATCH=$(( LAST_PATCH + 1 ))
+          fi
+          VERSION="${BASE}.${PATCH}"
+          echo "version=${VERSION}" >> $GITHUB_OUTPUT
+          echo "month=${BASE}" >> $GITHUB_OUTPUT
+          echo "Releasing as \`${VERSION}\`" >> $GITHUB_STEP_SUMMARY
+
+  # Build multi-arch image and push with a CI tag for testing
+  build:
+    runs-on: ubuntu-latest
+    needs: [check]
+    if: needs.check.outputs.changed == 'true'
+    permissions:
+      packages: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: docker/setup-buildx-action@v4
+
+      - uses: docker/login-action@v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GHCR_TOKEN }}
+
+      - uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ./build/Dockerfile.dev
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: ghcr.io/${{ github.repository }}:ci-${{ github.run_id }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  # Smoke test against the CI image before publishing
+  test:
+    runs-on: ubuntu-latest
+    needs: [build]
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: docker/login-action@v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GHCR_TOKEN }}
+
+      - name: Load dev image
+        run: |
+          docker pull ghcr.io/${{ github.repository }}:ci-${{ github.run_id }}
+          docker tag ghcr.io/${{ github.repository }}:ci-${{ github.run_id }} dev-dotfiles:latest
+
+      - name: Run smoke tests
+        run: make test-dev
+
+  # Promote CI image to release tags and create GitHub Release
+  publish:
+    runs-on: ubuntu-latest
+    needs: [check, test]
+    permissions:
+      contents: write   # push git tag + create GitHub Release
+      packages: write   # push release tags to GHCR
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: docker/setup-buildx-action@v4
+
+      - uses: docker/login-action@v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GHCR_TOKEN }}
+
+      - name: Promote CI image to release tags
+        run: |
+          docker buildx imagetools create \
+            --tag ghcr.io/${{ github.repository }}:${{ needs.check.outputs.version }} \
+            --tag ghcr.io/${{ github.repository }}:${{ needs.check.outputs.month }} \
+            --tag ghcr.io/${{ github.repository }}:latest \
+            ghcr.io/${{ github.repository }}:ci-${{ github.run_id }}
+
+      - name: Create and push git tag
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git tag ${{ needs.check.outputs.version }}
+          git push origin ${{ needs.check.outputs.version }}
+
+      - uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ needs.check.outputs.version }}
+          name: "Dev Container ${{ needs.check.outputs.version }}"
+          generate_release_notes: true
+          body: |
+            Automated weekly release.
+
+            Pull: `docker pull ghcr.io/jalexandercarr/dotfiles:${{ needs.check.outputs.version }}`

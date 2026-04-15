@@ -1,0 +1,100 @@
+# syntax=docker/dockerfile:1
+#
+# Dev container — pre-installs the full dotfiles stack (Go, Node, Python,
+# kubectl, kubectx/kubens, Neovim) via chezmoi.
+#
+# Build:   make build-dev
+# Launch:  make dev
+
+FROM ubuntu:24.04
+
+# ── Build-time identity args ────────────────────────────────────────────────
+ARG DEV_NAME="Developer"
+ARG DEV_EMAIL="dev@example.com"
+ARG DEV_GITHUB="developer"
+ARG DEV_SSH_KEY="~/.ssh/id_github.pub"
+ARG DEV_UID=1000
+ARG DEV_GID=1000
+
+# ── Image metadata ──────────────────────────────────────────────────────────
+LABEL org.opencontainers.image.title="dotfiles-dev" \
+      org.opencontainers.image.description="Development container with chezmoi dotfiles pre-applied"
+
+# ── Shared environment ──────────────────────────────────────────────────────
+ENV DEBIAN_FRONTEND=noninteractive \
+    LANG=en_US.UTF-8 \
+    LC_ALL=en_US.UTF-8
+
+# ── Layer 1: Bootstrapping packages ────────────────────────────────────────
+# Only packages required before chezmoi can run. Everything else (devtools,
+# Python build deps, kubectl/kubectx/kubens) is installed by chezmoi scripts.
+RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
+    --mount=type=cache,target=/var/lib/apt,sharing=locked \
+    apt-get update && apt-get install -y --no-install-recommends \
+      # Network / repo bootstrapping
+      ca-certificates curl wget git gnupg lsb-release \
+      # Archive tools (needed by chezmoi scripts before they run)
+      tar unzip \
+      # System config
+      locales sudo \
+      # Shell (useradd -s /bin/zsh requires zsh to exist)
+      zsh zsh-autosuggestions zsh-syntax-highlighting \
+    && locale-gen en_US.UTF-8
+
+# ── Layer 2: chezmoi ────────────────────────────────────────────────────────
+RUN curl -fsLS get.chezmoi.io | sh -s -- -b /usr/local/bin
+
+# ── Layer 3: Non-root dev user ──────────────────────────────────────────────
+# Ubuntu 24.04 ships with an "ubuntu" user at UID/GID 1000; remove it so our
+# dev user can claim that UID without conflict (exit code 4 from useradd).
+RUN if getent passwd "${DEV_UID}" > /dev/null 2>&1; then \
+      userdel "$(id -nu "${DEV_UID}")"; \
+    fi && \
+    if ! getent group "${DEV_GID}" > /dev/null 2>&1; then \
+      groupadd --gid "${DEV_GID}" dev; \
+    fi && \
+    useradd --uid "${DEV_UID}" --gid "${DEV_GID}" -ms /bin/zsh -G sudo dev && \
+    echo "dev ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/dev && \
+    echo "Defaults !requiretty"      >> /etc/sudoers.d/dev && \
+    chmod 440 /etc/sudoers.d/dev
+
+USER dev
+ENV HOME=/home/dev
+WORKDIR /home/dev
+
+# ── Layer 4: Dotfiles source ────────────────────────────────────────────────
+# Invalidates the apply layer when home/ content changes.
+COPY --chown=dev:dev home/ /home/dev/.local/share/chezmoi/
+
+# ── Layer 5: chezmoi config ─────────────────────────────────────────────────
+# Written after COPY so that ARG-only changes bust only this layer and apply,
+# not the COPY layer cache.
+RUN mkdir -p ~/.config/chezmoi && \
+    printf '%s\n' \
+      'data:' \
+      "  name: \"${DEV_NAME}\"" \
+      "  email: \"${DEV_EMAIL}\"" \
+      "  githubUsername: \"${DEV_GITHUB}\"" \
+      "  sshSigningKey: \"${DEV_SSH_KEY}\"" \
+      '  packages:' \
+      '    devtools: true' \
+      '    neovim: true' \
+      '    docker: false' \
+      '    go: true' \
+      '    kubernetes: true' \
+      '    lima: false' \
+      '    node: true' \
+      '    python: true' \
+      '  addons:' \
+      '    fonts: false' \
+      '    motd: false' \
+      '    ai: true' \
+      '    vscode: false' \
+    > ~/.config/chezmoi/chezmoi.yaml
+
+# ── Layer 6: Apply dotfiles ─────────────────────────────────────────────────
+# Runs run_onchange_* scripts: devtools, go (goenv), node (NVM), python
+# (pyenv + CPython compile), kubernetes (kubectl/kubectx/kubens), and neovim.
+RUN chezmoi apply --force
+
+CMD ["zsh"]
