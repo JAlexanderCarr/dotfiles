@@ -109,7 +109,7 @@ jobs:
           git tag ${{ needs.build.outputs.version }}
           git push origin ${{ needs.build.outputs.version }}
 
-      - uses: softprops/action-gh-release@v2
+      - uses: softprops/action-gh-release@v3
         with:
           tag_name: ${{ needs.build.outputs.version }}
           name: "Dev Container ${{ needs.build.outputs.version }}"
