@@ -89,6 +89,7 @@ RUN mkdir -p ~/.config/chezmoi && \
       '    fonts: false' \
       '    motd: false' \
       '    ai: true' \
+      '    claudeProvider: "claude"' \
       '    vscode: false' \
     > ~/.config/chezmoi/chezmoi.yaml
 
