@@ -7,9 +7,23 @@ The `ai` add-on installs global Claude Code configuration managed by chezmoi.
 | Path | Description |
 |------|-------------|
 | `~/.claude/CLAUDE.md` | Global coding preferences and standards |
-| `~/.claude/settings.json` | Claude Code settings (provider, env vars, plugins) |
+| `~/.claude/settings.json` | Claude Code settings (provider, env vars, plugins, hooks) |
+| `~/.claude/hooks/` | Safety hooks that run before tool execution |
 | `~/.claude/skills/` | Custom skill definitions |
 | `~/.config/ccstatusline/settings.json` | Status line config |
+
+## Hooks
+
+`PreToolUse` hooks run before every tool call and block execution by exiting with code `2`. They apply globally across all projects.
+
+| Hook | Trigger | What it blocks |
+|------|---------|----------------|
+| `block-dangerous-rm.sh` | `Bash` | `rm -rf /`, `rm -rf ~`, `--no-preserve-root` |
+| `block-dangerous-git.sh` | `Bash` | Force push, `reset --hard`, `clean -f`, `branch -D`, `restore`/`checkout --` without `--staged` |
+| `block-dangerous-bash.sh` | `Bash` | Fork bomb, `chmod *7 /`, writes to `/etc/passwd`/`shadow`/`sudoers`, `dd` to raw disk, shutdown/reboot |
+| `protect-sensitive-files.sh` | `Edit`, `Write` | `.env*`, SSH private keys, `*.pem`/`*.key`, `.aws/credentials`, `.netrc`, `.pypirc` |
+
+Hooks are permanent — blocked commands cannot be overridden via permission prompts or user approval.
 
 ## Provider Setup
 
@@ -48,10 +62,9 @@ Then run `chezmoi apply`.
 
 ## Machine-Local Overrides
 
-Claude Code supports `~/.claude/settings.local.json` for **project-level** local overrides (gitignored). For global machine-specific env vars, use a shell function in `~/.zshrc` or `~/.env`:
+Claude Code supports `settings.local.json` for project-level local overrides (gitignored). For global machine-specific env vars, use a shell function in `~/.zshrc` or `~/.env`:
 
 ```zsh
-# ~/.zshrc — pass extra env vars to claude without touching settings.json
 claude() {
   SOME_VAR=value command claude "$@"
 }

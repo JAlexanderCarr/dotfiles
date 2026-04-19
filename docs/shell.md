@@ -18,7 +18,7 @@ The Zsh prompt (`~/.zshrc`) shows Git branch, Kubernetes context/namespace, comm
 | `gca` | `git commit -s --amend` |
 | `gch` | `git checkout` |
 | `gb` | `git branch` |
-| `gfp` | `git push --force-with-lease` |
+| `gfp` | `git push --force-with-lease` (blocked by Claude Code hooks — run manually if needed) |
 | `gpu` | `git push -u origin <current-branch>` |
 | `gr` | `git rebase -i` |
 
