@@ -224,8 +224,6 @@ check_file_contains "$HOME/.npmrc" "min-release-age=7" "npmrc has min-release-ag
 # Claude Code configuration
 check_file "$HOME/.claude/CLAUDE.md"                    "Claude CLAUDE.md"
 check_file "$HOME/.claude/settings.json"                "Claude settings.json"
-check_dir  "$HOME/.claude/commands"                     "Claude commands dir"
-check_dir  "$HOME/.claude/agents"                       "Claude agents dir"
 check_file "$HOME/.config/ccstatusline/settings.json"   "ccstatusline settings.json"
 
 # ============================================================================

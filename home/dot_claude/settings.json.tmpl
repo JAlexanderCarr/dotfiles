@@ -12,5 +12,35 @@
     "CLAUDE_CODE_DISABLE_ADAPTIVE_THINKING": "1",
     "MAX_THINKING_TOKENS": "128000"{{ if eq .addons.claudeProvider "bedrock" }},
     "AWS_PROFILE": "claude-code"{{ end }}
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"$HOME\"/.claude/hooks/block-dangerous-rm.sh"
+          },
+          {
+            "type": "command",
+            "command": "\"$HOME\"/.claude/hooks/block-dangerous-git.sh"
+          },
+          {
+            "type": "command",
+            "command": "\"$HOME\"/.claude/hooks/block-dangerous-bash.sh"
+          }
+        ]
+      },
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"$HOME\"/.claude/hooks/protect-sensitive-files.sh"
+          }
+        ]
+      }
+    ]
   }
 }
