@@ -30,6 +30,10 @@
 {{- $installFonts := promptBoolOnce . "addons.fonts" "Fonts" false }}
 {{- $installMotd := promptBoolOnce . "addons.motd" "Custom MOTD" true }}
 {{- $installAI := promptBoolOnce . "addons.ai" "AI Config" true }}
+{{- $claudeProvider := "" }}
+{{- if $installAI }}
+{{-   $claudeProvider = promptStringOnce . "addons.claudeProvider" "Claude provider (claude/bedrock)" "claude" }}
+{{- end }}
 {{- $installVscode := promptBoolOnce . "addons.vscode" "VSCode Config" true }}
 
 data:
@@ -50,4 +54,5 @@ data:
     fonts: {{ $installFonts }}
     motd: {{ $installMotd }}
     ai: {{ $installAI }}
+    claudeProvider: {{ $claudeProvider | quote }}
     vscode: {{ $installVscode }}
