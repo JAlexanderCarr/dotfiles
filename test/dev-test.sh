@@ -73,7 +73,9 @@ check_file ~/.config/nvim/init.vim "nvim init.vim"
 
 echo ""
 echo "--- AI config ---"
-check_dir ~/.config/aide "aide config (~/.config/aide)"
+check_dir  ~/.claude              "claude config (~/.claude)"
+check_file ~/.claude/CLAUDE.md   "CLAUDE.md"
+check_file ~/.claude/settings.json "claude settings.json"
 
 echo ""
 echo "=========================="

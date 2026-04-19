@@ -1,5 +1,11 @@
 {
   "tui": "fullscreen",
+  "showClearContextOnPlanAccept": true,
+  "awaySummaryEnabled": false,
+  "attribution": {
+    "commit": "",
+    "pr": ""
+  },
   "enabledPlugins": {
     "gopls-lsp@claude-plugins-official": true
   },
@@ -10,7 +16,7 @@
   },
   "env": {
     "CLAUDE_CODE_DISABLE_ADAPTIVE_THINKING": "1",
-    "MAX_THINKING_TOKENS": "128000"{{ if eq .addons.claudeProvider "bedrock" }},
+    "MAX_THINKING_TOKENS": "128000"{{ if eq (index .addons "claudeProvider") "bedrock" }},
     "AWS_PROFILE": "claude-code"{{ end }}
   },
   "hooks": {
@@ -33,7 +39,7 @@
         ]
       },
       {
-        "matcher": "Edit|Write",
+        "matcher": "Edit|Write|Read",
         "hooks": [
           {
             "type": "command",
