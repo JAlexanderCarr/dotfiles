@@ -161,6 +161,7 @@ data:
     fonts: false
     motd: true
     ai: true
+    claudeProvider: "claude"
     vscode: true
 EOF
 
