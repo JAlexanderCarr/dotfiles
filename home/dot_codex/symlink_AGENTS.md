@@ -1,1 +1,0 @@
-../.config/aide/AI_PREFERENCES.md
