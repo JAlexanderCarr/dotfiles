@@ -30,25 +30,25 @@ install_devtools_macos() {
     if ! command -v brew >/dev/null; then
         with_spinner "Installing Homebrew" /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
     fi
-    with_spinner "Installing dev packages" brew install --quiet git gnu-tar gnu-sed bash-completion pkg-config openssh fzf hub
+    with_spinner "Installing dev packages" brew install --quiet git gnu-tar gnu-sed bash-completion pkg-config openssh fzf hub gh
 }
 
 install_devtools_debian() {
     with_spinner "Updating package lists" sudo apt-get update -qq
-    with_spinner "Installing dev packages" sudo DEBIAN_FRONTEND=noninteractive apt-get install -y -qq build-essential libssl-dev make git g++ curl bash-completion pkg-config openssh-client fuse libfuse2 software-properties-common fzf hub
+    with_spinner "Installing dev packages" sudo DEBIAN_FRONTEND=noninteractive apt-get install -y -qq build-essential libssl-dev make git g++ curl bash-completion pkg-config openssh-client fuse libfuse2 software-properties-common fzf hub gh
 }
 
 install_devtools_fedora() {
-    with_spinner "Installing dev packages" sudo dnf install -y -q @development-tools openssl-devel make git gcc-c++ curl bash-completion pkgconf-pkg-config openssh-clients fzf hub
+    with_spinner "Installing dev packages" sudo dnf install -y -q @development-tools openssl-devel make git gcc-c++ curl bash-completion pkgconf-pkg-config openssh-clients fzf hub gh
 }
 
 install_devtools_rhel() {
     with_spinner "Installing Development Tools group" sudo yum groupinstall -y -q "Development Tools"
-    with_spinner "Installing additional packages" sudo yum install -y -q openssl-devel make git gcc-c++ curl bash-completion pkgconfig openssh-clients fzf hub
+    with_spinner "Installing additional packages" sudo yum install -y -q openssl-devel make git gcc-c++ curl bash-completion pkgconfig openssh-clients fzf hub gh
 }
 
 install_devtools_arch() {
-    with_spinner "Installing dev packages" sudo pacman -Sy --noconfirm --quiet base-devel openssl make git gcc curl bash-completion pkgconf openssh fzf hub
+    with_spinner "Installing dev packages" sudo pacman -Sy --noconfirm --quiet base-devel openssl make git gcc curl bash-completion pkgconf openssh fzf hub github-cli
 }
 
 if [[ "$OS" == "darwin" ]]; then
