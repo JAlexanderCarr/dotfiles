@@ -91,6 +91,7 @@ RUN mkdir -p ~/.config/chezmoi && \
       '    ai: true' \
       '    claudeProvider: "claude"' \
       '    vscode: false' \
+      '    obsidian: false' \
     > ~/.config/chezmoi/chezmoi.yaml
 
 # ── Layer 6: Apply dotfiles ─────────────────────────────────────────────────

@@ -35,7 +35,7 @@
 {{-   $claudeProvider = promptStringOnce . "addons.claudeProvider" "Claude provider (claude/bedrock)" "claude" }}
 {{- end }}
 {{- $installVscode := promptBoolOnce . "addons.vscode" "VSCode Config" true }}
-{{- $installObsidian := promptBoolOnce . "addons.obsidian" "Obsidian vault configuration" true }}
+{{- $installObsidian := promptBoolOnce . "addons.obsidian" "Obsidian vault configuration (installs ~/vaults/personal and ~/vaults/agent-db)" true }}
 
 data:
   name: {{ $name | quote }}
@@ -58,7 +58,3 @@ data:
     claudeProvider: {{ $claudeProvider | quote }}
     vscode: {{ $installVscode }}
     obsidian: {{ $installObsidian }}
-{{ if $installObsidian -}}
-  obsidian:
-    vault_path: {{ promptStringOnce . "obsidian.vault_path" "Obsidian vault path" (joinPath .chezmoi.homeDir "vaults/personal") | quote }}
-{{- end }}
