@@ -163,6 +163,7 @@ data:
     ai: true
     claudeProvider: "claude"
     vscode: true
+    obsidian: true
 EOF
 
 check_file "$HOME/.config/chezmoi/chezmoi.yaml" "chezmoi config"
@@ -225,6 +226,23 @@ check_file_contains "$HOME/.npmrc" "min-release-age=7" "npmrc has min-release-ag
 check_file "$HOME/.claude/CLAUDE.md"                    "Claude CLAUDE.md"
 check_file "$HOME/.claude/settings.json"                "Claude settings.json"
 check_file "$HOME/.config/ccstatusline/settings.json"   "ccstatusline settings.json"
+
+# Obsidian vaults
+check_dir  "$HOME/vaults/personal/.obsidian"                                      "personal vault .obsidian dir"
+check_dir  "$HOME/vaults/agent-db/.obsidian"                                      "agent-db vault .obsidian dir"
+check_file "$HOME/vaults/personal/.obsidian/community-plugins.json"               "personal community-plugins.json"
+check_file "$HOME/vaults/personal/Templates/Daily Note.md"                        "personal Daily Note template"
+check_file "$HOME/vaults/agent-db/.obsidian/community-plugins.json"               "agent-db community-plugins.json"
+check_file "$HOME/vaults/agent-db/CLAUDE.md"                                      "agent-db CLAUDE.md"
+check_file "$HOME/vaults/agent-db/AGENTS.md"                                      "agent-db AGENTS.md"
+check_file "$HOME/vaults/agent-db/.claude/commands/capture.md"                    "agent-db capture command"
+check_file "$HOME/vaults/agent-db/Templates/Session Log.md"                       "agent-db Session Log template"
+check_file_contains "$HOME/vaults/agent-db/.obsidian/community-plugins.json" \
+    "dataview" "agent-db community-plugins.json contains dataview"
+# Verify user notes alongside managed files are not removed on re-apply
+touch "$HOME/vaults/personal/My Note.md"
+chezmoi apply --force --keep-going >/dev/null 2>&1 || true
+check_file "$HOME/vaults/personal/My Note.md"                                     "user note preserved after re-apply"
 
 # ============================================================================
 # VERIFY PACKAGE INSTALLATIONS (if not skipped)
