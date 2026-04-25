@@ -6,7 +6,7 @@
 # Build:   make build-dev
 # Launch:  make dev
 
-FROM ubuntu:24.04
+FROM ubuntu:26.04
 
 # ── Build-time identity args ────────────────────────────────────────────────
 ARG DEV_NAME="Developer"
