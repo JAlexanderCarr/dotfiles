@@ -1,0 +1,10 @@
+{
+  "show-checkboxes": true,
+  "move-tags": true,
+  "tag-colors": [],
+  "new-note-template": "templates/notecard.md",
+  "new-note-folder": "boards/notecards",
+  "move-dates": true,
+  "archive-with-date": true,
+  "archive-date-format": "{YYYY-MM-DD HH:mm}"
+}

@@ -34,3 +34,5 @@ block() {
 [[ "$FILENAME" == ".netrc" ]] && block
 [[ "$FILENAME" == ".npmrc" ]] && [[ "$FILE_PATH" == "$HOME/.npmrc" ]] && block
 [[ "$FILENAME" == ".pypirc" ]] && block
+
+exit 0

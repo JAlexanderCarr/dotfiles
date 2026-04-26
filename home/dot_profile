@@ -33,6 +33,11 @@ if [ -d "$PYENV_ROOT" ]; then
     export PATH="$PYENV_ROOT/bin:$PATH"
 fi
 
+# Obsidian CLI
+if [ -d "/Applications/Obsidian.app/Contents/MacOS" ]; then
+    export PATH="$PATH:/Applications/Obsidian.app/Contents/MacOS"
+fi
+
 # Source local environment overrides (not managed by chezmoi)
 if [ -f "$HOME/.env" ]; then
     . "$HOME/.env"

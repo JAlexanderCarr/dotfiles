@@ -1,0 +1,157 @@
+{
+  "biggerIcons": "off",
+  "clickableIcons": "off",
+  "showAllFileIcons": false,
+  "showAllFolderIcons": false,
+  "minimalFolderIcons": false,
+  "showMarkdownTabIcons": true,
+  "showTitleIcons": false,
+  "showTagPillIcons": false,
+  "showMenuActions": false,
+  "showSuggestionIcons": false,
+  "showQuickSwitcherIcons": true,
+  "showMoveFileIcons": true,
+  "showItemName": "desktop",
+  "biggerSearchResults": "mobile",
+  "maxSearchResults": 50,
+  "colorPicker1": "list",
+  "colorPicker2": "rgb",
+  "uncolorHover": false,
+  "uncolorDrag": false,
+  "uncolorSelect": false,
+  "uncolorQuick": false,
+  "maxBackups": 2,
+  "dialogState": {
+    "iconMode": true,
+    "emojiMode": false,
+    "rulePage": "file"
+  },
+  "appIcons": {},
+  "tabIcons": {},
+  "fileIcons": {},
+  "bookmarkIcons": {},
+  "tagIcons": {},
+  "propertyIcons": {},
+  "ribbonIcons": {},
+  "fileRules": [
+    {
+      "id": "ATLs1",
+      "name": "base",
+      "match": "all",
+      "conditions": [
+        {
+          "source": "extension",
+          "operator": "is",
+          "value": "base"
+        }
+      ],
+      "enabled": true,
+      "icon": "lucide-database"
+    },
+    {
+      "id": "jkqng",
+      "name": "canvas",
+      "match": "all",
+      "conditions": [
+        {
+          "source": "extension",
+          "operator": "is",
+          "value": "canvas"
+        }
+      ],
+      "enabled": true,
+      "icon": "lucide-layout-dashboard"
+    },
+    {
+      "id": "uev4P",
+      "name": "kanban",
+      "match": "all",
+      "conditions": [
+        {
+          "source": "property:kanban-plugin",
+          "operator": "is",
+          "value": "board"
+        }
+      ],
+      "enabled": true,
+      "icon": "lucide-kanban-square"
+    },
+    {
+      "id": "4MwJh",
+      "name": "pdf",
+      "match": "all",
+      "conditions": [
+        {
+          "source": "extension",
+          "operator": "is",
+          "value": "pdf"
+        }
+      ],
+      "enabled": true,
+      "icon": "lucide-file-type"
+    },
+    {
+      "id": "olSk2",
+      "name": "image",
+      "match": "any",
+      "conditions": [
+        {
+          "source": "extension",
+          "operator": "is",
+          "value": "jpg"
+        },
+        {
+          "source": "extension",
+          "operator": "is",
+          "value": "png"
+        }
+      ],
+      "enabled": true,
+      "icon": "lucide-file-image"
+    },
+    {
+      "id": "fZc3S",
+      "name": "markdown",
+      "match": "all",
+      "conditions": [
+        {
+          "source": "extension",
+          "operator": "is",
+          "value": "md"
+        }
+      ],
+      "enabled": true,
+      "icon": "lucide-file-text"
+    },
+    {
+      "id": "tCMN6",
+      "name": "unknown",
+      "match": "all",
+      "conditions": [
+        {
+          "source": "extension",
+          "operator": "!is"
+        }
+      ],
+      "enabled": true
+    }
+  ],
+  "folderRules": [
+    {
+      "id": "ebkwU",
+      "name": "folder",
+      "match": "any",
+      "conditions": [
+        {
+          "source": "tree",
+          "operator": "is"
+        },
+        {
+          "source": "tree",
+          "operator": "!is"
+        }
+      ],
+      "enabled": true
+    }
+  ]
+}

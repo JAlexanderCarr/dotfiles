@@ -1,0 +1,13 @@
+filters:
+  and:
+    - type == "daily"
+views:
+  - type: table
+    name: Recent dailies
+    order:
+      - file.name
+      - date
+      - tags
+    sort:
+      - property: date
+        direction: DESC

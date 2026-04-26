@@ -1,8 +1,16 @@
+---
+type: meeting
+date: {{date:YYYY-MM-DD}}
+attendees: []
+project: ""
+status: scheduled
+tags: []
+---
+
 # Meeting — {{date:YYYY-MM-DD}}
 
 ## Details
 
-- **Date:** {{date:YYYY-MM-DD}}
 - **Attendees:**
 - **Location / Link:**
 
