@@ -3,5 +3,8 @@
   "showViewHeader": true,
   "enabledCssSnippets": [
     "sidebar"
-  ]
+  ],
+  "interfaceFontFamily": "",
+  "monospaceFontFamily": "FiraMono Nerd Font",
+  "showRibbon": true
 }

@@ -1,0 +1,15 @@
+filters:
+  and:
+    - type == "meeting"
+views:
+  - type: table
+    name: All meetings
+    order:
+      - file.name
+      - date
+      - attendees
+      - project
+      - status
+    sort:
+      - property: date
+        direction: DESC

@@ -34,3 +34,5 @@ echo "$COMMAND" | grep -qE 'dd\s.*of=/dev/disk[0-9]' \
 # Shutdown/reboot without explicit intent
 echo "$COMMAND" | grep -qE '^\s*(shutdown|reboot|halt|poweroff)\b' \
   && block "system shutdown/reboot requires explicit user confirmation"
+
+exit 0
