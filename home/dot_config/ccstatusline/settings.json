@@ -9,9 +9,8 @@
         "bold": false
       },
       {
-        "id": "9c2c78f0-4590-466c-b908-4abf0dbb6c0c",
-        "type": "separator",
-        "color": "white"
+        "id": "0720c767-86ad-4d4f-bbbe-f28f75c01830",
+        "type": "separator"
       },
       {
         "id": "1",
@@ -38,7 +37,7 @@
         "customText": ")"
       },
       {
-        "id": "2",
+        "id": "58568467-caca-4e7b-9207-3a1514f0a081",
         "type": "separator"
       },
       {
@@ -139,7 +138,8 @@
       {
         "id": "ff165db7-74a8-419a-a1b0-e83d3c416839",
         "type": "custom-text",
-        "customText": " "
+        "customText": " PR ",
+        "color": "magenta"
       },
       {
         "id": "d9e2ed81-37d9-434b-8bd0-aa2a9edbcbc7",
