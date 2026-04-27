@@ -1,6 +1,7 @@
 filters:
   and:
     - type == "daily"
+    - file.folder != "templates"
 views:
   - type: table
     name: Recent dailies
