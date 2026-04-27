@@ -12,6 +12,22 @@ concurrency:
 
 jobs:
 
+  # Detect if Dockerfile.dev changed
+  check-dev:
+    runs-on: ubuntu-latest
+    outputs:
+      changed: ${{ steps.filter.outputs.dev }}
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v6
+    - name: Check for Dockerfile.dev changes
+      uses: dorny/paths-filter@v3
+      id: filter
+      with:
+        filters: |
+          dev:
+            - 'build/Dockerfile.dev'
+
   # Build Ubuntu Container
   build-ubuntu:
     runs-on: ubuntu-latest
@@ -64,6 +80,8 @@ jobs:
   build-dev:
     runs-on: ubuntu-latest
     name: Build Dev Container
+    needs: check-dev
+    if: needs.check-dev.outputs.changed == 'true'
     steps:
     - name: Checkout repository
       uses: actions/checkout@v6
@@ -138,7 +156,8 @@ jobs:
   test-dev:
     runs-on: ubuntu-latest
     name: Test Dev Container
-    needs: build-dev
+    needs: [check-dev, build-dev]
+    if: needs.check-dev.outputs.changed == 'true'
     steps:
     - name: Checkout repository
       uses: actions/checkout@v6
@@ -176,6 +195,8 @@ jobs:
         fi
         if [ "${{ needs.test-dev.result }}" = "success" ]; then
           DEV_ICON="✅"
+        elif [ "${{ needs.test-dev.result }}" = "skipped" ]; then
+          DEV_ICON="⏭️"
         else
           DEV_ICON="❌"
         fi
@@ -201,7 +222,7 @@ jobs:
         echo "| Dev | $DEV_ICON | ${{ needs.test-dev.result }} |" >> $GITHUB_STEP_SUMMARY
 
     - name: Check for failures
-      if: needs.test-ubuntu.result != 'success' || needs.test-amazon.result != 'success' || needs.test-dev.result != 'success'
+      if: needs.test-ubuntu.result != 'success' || needs.test-amazon.result != 'success' || (needs.test-dev.result != 'success' && needs.test-dev.result != 'skipped')
       run: |
         echo "One or more tests failed!"
         exit 1
