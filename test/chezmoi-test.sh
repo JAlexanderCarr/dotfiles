@@ -227,16 +227,27 @@ check_file "$HOME/.claude/CLAUDE.md"                    "Claude CLAUDE.md"
 check_file "$HOME/.claude/settings.json"                "Claude settings.json"
 check_file "$HOME/.config/ccstatusline/settings.json"   "ccstatusline settings.json"
 
-# Obsidian vaults
+# Obsidian vaults — personal
 check_dir  "$HOME/vaults/personal/.obsidian"                                      "personal vault .obsidian dir"
-check_dir  "$HOME/vaults/agent-db/.obsidian"                                      "agent-db vault .obsidian dir"
 check_file "$HOME/vaults/personal/.obsidian/community-plugins.json"               "personal community-plugins.json"
-check_file "$HOME/vaults/personal/Templates/Daily Note.md"                        "personal Daily Note template"
+check_file "$HOME/vaults/personal/home.md"                                        "personal home.md"
+check_file "$HOME/vaults/personal/templates/daily.md"                             "personal daily template"
+check_file "$HOME/vaults/personal/templates/meeting.md"                           "personal meeting template"
+check_file "$HOME/vaults/personal/templates/notecard.md"                          "personal notecard template"
+check_file "$HOME/vaults/personal/bases/daily.base"                               "personal daily base"
+check_file "$HOME/vaults/personal/bases/meetings.base"                            "personal meetings base"
+check_file "$HOME/vaults/personal/wiki/index.md"                                  "personal wiki index"
+check_dir  "$HOME/vaults/personal/notes/daily"                                    "personal daily notes dir"
+check_dir  "$HOME/vaults/personal/boards/notecards"                               "personal notecards board dir"
+# Obsidian vaults — agent-db
+check_dir  "$HOME/vaults/agent-db/.obsidian"                                      "agent-db vault .obsidian dir"
 check_file "$HOME/vaults/agent-db/.obsidian/community-plugins.json"               "agent-db community-plugins.json"
 check_file "$HOME/vaults/agent-db/CLAUDE.md"                                      "agent-db CLAUDE.md"
-check_file "$HOME/vaults/agent-db/AGENTS.md"                                      "agent-db AGENTS.md"
+check_file "$HOME/vaults/agent-db/templates/Session Log.md"                       "agent-db Session Log template"
+check_file "$HOME/vaults/agent-db/templates/Decision Log.md"                      "agent-db Decision Log template"
 check_file "$HOME/vaults/agent-db/.claude/commands/capture.md"                    "agent-db capture command"
-check_file "$HOME/vaults/agent-db/Templates/Session Log.md"                       "agent-db Session Log template"
+check_file "$HOME/vaults/agent-db/.claude/commands/daily-digest.md"               "agent-db daily-digest command"
+check_file "$HOME/vaults/agent-db/.claude/commands/search.md"                     "agent-db search command"
 check_file_contains "$HOME/vaults/agent-db/.obsidian/community-plugins.json" \
     "dataview" "agent-db community-plugins.json contains dataview"
 # Verify user notes alongside managed files are not removed on re-apply
