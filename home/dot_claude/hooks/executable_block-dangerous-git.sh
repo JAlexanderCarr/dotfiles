@@ -43,3 +43,7 @@ echo "$COMMAND" | grep -qE 'git restore\s' && ! echo "$COMMAND" | grep -qE '--st
 # Checkout -- (discard working tree changes)
 echo "$COMMAND" | grep -qE 'git checkout\s+--\s' \
   && block "'git checkout --' discards uncommitted changes"
+
+# Stash (hides uncommitted changes in a way that's easy to lose or forget)
+echo "$COMMAND" | grep -qE 'git stash\b' \
+  && block "'git stash' is not permitted; commit or discard changes explicitly"
