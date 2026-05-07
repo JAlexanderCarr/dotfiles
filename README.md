@@ -16,7 +16,7 @@ During init you'll be prompted for your name, email, GitHub username, SSH signin
 
 ## Packages
 
-Prompted during `chezmoi init`. Re-run automatically when install scripts change.
+Prompted during `chezmoi init`. Re-run automatically when install scripts change (except `fonts`, which is one-time).
 
 | Package | Default | Description |
 |---------|---------|-------------|
@@ -24,6 +24,7 @@ Prompted during `chezmoi init`. Re-run automatically when install scripts change
 | neovim | on | Neovim with LSP, completion, plugins |
 | go | on | goenv + Go |
 | kubernetes | on | kind, kubectl, kubectx/kubens |
+| lima | off | Lima VMs for lightweight Linux on macOS |
 | node | on | NVM + Node.js |
 | python | on | pyenv + Python |
 | docker | off | Docker CE / Docker Desktop |
@@ -35,7 +36,10 @@ Prompted during `chezmoi init`. Re-run automatically when install scripts change
 | motd | on | Custom message of the day with system info |
 | vscode | on | VS Code settings, keybindings, extensions |
 | ai | on | Claude Code config and settings |
-| fonts | off | FiraMono Nerd Font |
+| obsidian | off | Obsidian vault scaffolding at `~/vaults/personal` and `~/vaults/agent-db` |
+| fonts | off | FiraMono Nerd Font (installed once, not re-run on changes) |
+
+When `ai` is enabled, you'll also be prompted for **Claude provider** (`claude` or `bedrock`, default `claude`).
 
 ## Common Commands
 
