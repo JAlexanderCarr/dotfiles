@@ -15,8 +15,7 @@ fonts/
 # VSCode config files are installed directly by the install script
 vscode/
 
-# Obsidian vaults — managed natively by chezmoi under ~/vaults/
-# personal/ and agent-db/ are excluded entirely when the addon is off
+# Obsidian vaults at ~/vaults/ (personal, libdex, agent-db) — excluded when addon is off
 {{ if not .addons.obsidian }}
 vaults/
 {{ end }}
