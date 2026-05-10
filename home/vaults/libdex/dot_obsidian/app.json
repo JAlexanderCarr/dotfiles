@@ -1,0 +1,14 @@
+{
+  "showInlineTitle": false,
+  "showLineNumber": false,
+  "pdfExportSettings": {
+    "includeName": false,
+    "pageSize": "Letter",
+    "landscape": false,
+    "margin": "0",
+    "downscalePercent": 75
+  },
+  "showUnsupportedFiles": true,
+  "openBehavior": "file:home",
+  "propertiesInDocument": "hidden"
+}
