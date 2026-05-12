@@ -9,6 +9,24 @@
     "terminal.integrated.defaultLocation": "editor",
     "terminal.integrated.defaultProfile.osx": "zsh",
     "terminal.integrated.defaultProfile.linux": "zsh",
+    "terminal.integrated.profiles.osx": {
+        "tmux": {
+            "path": "tmux",
+            "args": ["new-session", "-c", "${workspaceFolder}"],
+            "icon": "terminal-tmux"
+        },
+        "zsh": { "path": "zsh", "args": ["-l"] },
+        "bash": { "path": "bash", "args": ["-l"] }
+    },
+    "terminal.integrated.profiles.linux": {
+        "tmux": {
+            "path": "tmux",
+            "args": ["new-session", "-c", "${workspaceFolder}"],
+            "icon": "terminal-tmux"
+        },
+        "zsh": { "path": "zsh", "args": ["-l"] },
+        "bash": { "path": "bash", "args": ["-l"] }
+    },
     "terminal.integrated.stickyScroll.enabled": false,
     "terminal.integrated.allowedLinkSchemes": [
         "file",

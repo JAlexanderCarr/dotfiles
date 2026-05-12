@@ -60,6 +60,23 @@ vim.g.clipboard = {
 }
 EOF
 
+" VS Code terminal enables modifyOtherKeys/kitty protocol when nvim queries it,
+" then sends shift+number as an encoded sequence (e.g. ESC[49;2u). Nvim maps
+" that to <S-1> but outputs the base digit '1' rather than '!' in insert mode.
+" Vim never queries for these protocols, so it receives '!' directly.
+if $TERM_PROGRAM ==# 'vscode'
+lua << EOF
+local shifted = {
+  ['<S-1>'] = '!', ['<S-2>'] = '@', ['<S-3>'] = '#', ['<S-4>'] = '$',
+  ['<S-5>'] = '%', ['<S-6>'] = '^', ['<S-7>'] = '&', ['<S-8>'] = '*',
+  ['<S-9>'] = '(', ['<S-0>'] = ')',
+}
+for lhs, rhs in pairs(shifted) do
+  vim.keymap.set({'i', 'c'}, lhs, rhs, { noremap = true })
+end
+EOF
+endif
+
 " Hide bottom bar
 set noshowmode
 
