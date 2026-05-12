@@ -81,5 +81,7 @@ set colorcolumn=80
 " Enforce 80-char textwidth for all filetypes — overrides built-in ftplugins
 autocmd FileType * setlocal textwidth=80
 
-" Enforce 80-char textwidth for git commits
-autocmd FileType gitcommit syntax match gitcommitOverflow /.\{81,}/ contained containedin=gitcommitSummary
+" Override built-in 50-char gitcommitSummary threshold to match textwidth=80
+autocmd FileType gitcommit syntax clear gitcommitSummary gitcommitOverflow
+autocmd FileType gitcommit syntax match gitcommitSummary /^.\{0,80\}/ contained containedin=gitcommitFirstLine nextgroup=gitcommitOverflow
+autocmd FileType gitcommit syntax match gitcommitOverflow /.\+/ contained
