@@ -8,11 +8,11 @@ Core development tools and build utilities.
 
 | Platform | Packages |
 |----------|----------|
-| macOS | git, gnu-tar, gnu-sed, bash-completion, pkg-config, openssh, fzf |
-| Debian/Ubuntu | build-essential, libssl-dev, make, git, g++, curl, bash-completion, pkg-config, openssh-client, fzf |
-| Fedora | @development-tools, openssl-devel, make, git, gcc-c++, curl, bash-completion, fzf |
-| RHEL/CentOS | "Development Tools" group, openssl-devel, make, git, gcc-c++, curl, bash-completion, fzf |
-| Arch | base-devel, openssl, make, git, gcc, curl, bash-completion, openssh, fzf |
+| macOS | git, gnu-tar, gnu-sed, bash-completion, pkg-config, openssh, fzf, tmux |
+| Debian/Ubuntu | build-essential, libssl-dev, make, git, g++, curl, bash-completion, pkg-config, openssh-client, fzf, tmux |
+| Fedora | @development-tools, openssl-devel, make, git, gcc-c++, curl, bash-completion, fzf, tmux |
+| RHEL/CentOS | "Development Tools" group, openssl-devel, make, git, gcc-c++, curl, bash-completion, fzf, tmux |
+| Arch | base-devel, openssl, make, git, gcc, curl, bash-completion, openssh, fzf, tmux |
 
 ## neovim
 
@@ -70,3 +70,14 @@ Copies settings, keybindings, and extensions list to the VS Code user directory.
 |----------|------|
 | macOS | `~/Library/Application Support/Code/User/` |
 | Linux | `~/.config/Code/User/` |
+
+## obsidian
+
+Scaffolds two Obsidian vaults at `~/vaults/`:
+
+| Vault | Purpose |
+|-------|---------|
+| `personal` | Personal notes, meeting notes, AI inbox workflow |
+| `libdex` | Reference library and knowledge base |
+
+Each vault includes pre-configured `.obsidian/` settings (plugins, appearance, hotkeys) and a `help/` directory with usage documentation.

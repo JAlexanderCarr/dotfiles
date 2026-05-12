@@ -36,7 +36,7 @@ Prompted during `chezmoi init`. Re-run automatically when install scripts change
 | motd | on | Custom message of the day with system info |
 | vscode | on | VS Code settings, keybindings, extensions |
 | ai | on | Claude Code config and settings |
-| obsidian | off | Obsidian vaults at `~/vaults/` — `personal`, `libdex`, `agent-db` |
+| obsidian | off | Obsidian vaults at `~/vaults/` — `personal`, `libdex` |
 | fonts | off | FiraMono Nerd Font (installed once, not re-run on changes) |
 
 When `ai` is enabled, you'll also be prompted for **Claude provider** (`claude` or `bedrock`, default `claude`).
