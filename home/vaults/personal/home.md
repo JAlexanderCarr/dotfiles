@@ -16,6 +16,6 @@ tags: []
 → [[bases/daily.base|Daily Notes]]
 → [[bases/meetings.base|Meetings]]
 
-## Wiki
+## Help
 
-→ [[wiki/index|Vault Wiki]] — structure, templates, tags, and plugins
+→ [[help/index|Vault Help]] — structure, templates, tags, and plugins

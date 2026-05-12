@@ -1,0 +1,14 @@
+filters:
+  and:
+    - ai_status == "draft"
+views:
+  - type: table
+    name: AI inbox — awaiting review
+    order:
+      - file.name
+      - type
+      - ai_generated
+      - ai_source
+    sort:
+      - property: ai_generated
+        direction: DESC

@@ -1,14 +1,16 @@
 ---
-type: wiki
+type: help
 aliases:
   - Templates
 tags: []
 ---
 # Templates
 
-← [[wiki/index|Wiki]]
+← [[help/index|Help]]
 
 ## Available Templates
+
+Templates are provenance-neutral — they carry no `ai_status` field and can be used by both humans and AI skills. When an AI skill creates a note, it stamps `ai_status: draft` programmatically at write time; the template itself stays clean.
 
 | Template | File | Type | Purpose |
 |----------|------|------|---------|
