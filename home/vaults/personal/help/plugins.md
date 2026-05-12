@@ -1,12 +1,12 @@
 ---
-type: wiki
+type: help
 aliases:
   - Plugins
 tags: []
 ---
 # Plugins
 
-← [[wiki/index|Wiki]]
+← [[help/index|Help]]
 
 ## Community
 

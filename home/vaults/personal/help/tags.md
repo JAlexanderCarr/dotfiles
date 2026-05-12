@@ -1,12 +1,12 @@
 ---
-type: wiki
+type: help
 aliases:
   - Tags
 tags: []
 ---
 # Tags
 
-← [[wiki/index|Wiki]]
+← [[help/index|Help]]
 
 ## Type Values
 
@@ -15,7 +15,19 @@ tags: []
 | `daily` | Daily note |
 | `meeting` | Meeting note |
 | `notecard` | Kanban card |
-| `wiki` | Vault documentation |
+| `help` | Vault documentation |
+| `transcript` | Raw meeting or audio transcript |
+
+## AI Provenance Property
+
+The `ai_status` property marks AI-touched notes. It is **never** present on human notes or templates.
+
+| Value | Meaning |
+|-------|---------|
+| `draft` | Written by AI, not yet reviewed by a human |
+| `reviewed` | Human has reviewed and approved the note |
+
+Human-facing bases filter to "ai_status not set" so AI drafts don't pollute trusted views. See [[help/ai-provenance-conventions]] for the full convention.
 
 ## Tag Reference
 
@@ -33,3 +45,4 @@ tags: []
 | `reference` | Something to look up again |
 | `decision` | A choice made and why |
 | `follow-up` | Needs action later |
+| `ai/draft` | Applied by AI skills to unreviewed notes |

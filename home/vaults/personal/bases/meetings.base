@@ -2,6 +2,7 @@ filters:
   and:
     - type == "meeting"
     - file.folder != "templates"
+    - !ai_status
 views:
   - type: table
     name: All meetings
