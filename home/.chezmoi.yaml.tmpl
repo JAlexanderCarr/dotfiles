@@ -35,7 +35,7 @@
 {{-   $claudeProvider = promptStringOnce . "addons.claudeProvider" "Claude provider (claude/bedrock)" "claude" }}
 {{- end }}
 {{- $installVscode := promptBoolOnce . "addons.vscode" "VSCode Config" true }}
-{{- $installObsidian := promptBoolOnce . "addons.obsidian" "Obsidian vaults at ~/vaults (personal, libdex, agent-db)" false }}
+{{- $installObsidian := promptBoolOnce . "addons.obsidian" "Obsidian vaults at ~/vaults (personal, libdex)" false }}
 
 data:
   name: {{ $name | quote }}
