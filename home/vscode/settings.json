@@ -58,5 +58,7 @@
     "terminal.integrated.suggest.insertTrailingSpace": true,
 
     // Extensions - Claude
-    "claudeCode.preferredLocation": "panel"
+    "claudeCode.preferredLocation": "panel",
+    "workbench.activityBar.compact": true,
+    "workbench.editor.closeEmptyGroups": false
 }
