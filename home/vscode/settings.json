@@ -48,6 +48,15 @@
     // Extensions - Go
     "go.toolsManagement.autoUpdate": true,
 
+    // Terminal suggestions
+    "terminal.integrated.suggest.quickSuggestions": {
+        "commands": "on",
+        "arguments": "on",
+        "unknown": "off"
+    },
+    "terminal.integrated.suggest.suggestOnTriggerCharacters": true,
+    "terminal.integrated.suggest.insertTrailingSpace": true,
+
     // Extensions - Claude
     "claudeCode.preferredLocation": "panel"
 }
