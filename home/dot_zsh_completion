@@ -52,5 +52,20 @@ if command -v kubectx &>/dev/null; then
     compdef _kube_contexts kx 2>/dev/null || true
 fi
 
+# --- kind ---
+if command -v kind &>/dev/null; then
+    source <(kind completion zsh)
+fi
+
+# --- gh (GitHub CLI) ---
+if command -v gh &>/dev/null; then
+    source <(gh completion -s zsh)
+fi
+
+# --- chezmoi ---
+if command -v chezmoi &>/dev/null; then
+    source <(chezmoi completion zsh)
+fi
+
 # --- NVM ---
 [ -s "$NVM_DIR/bash_completion" ] && . "$NVM_DIR/bash_completion"
