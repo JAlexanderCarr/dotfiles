@@ -1,0 +1,6 @@
+[
+    {
+        "key": "ctrl+p",
+        "command": "openModelPicker"
+    }
+]
