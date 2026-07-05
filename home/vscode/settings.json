@@ -60,5 +60,8 @@
     // Extensions - Claude
     "claudeCode.preferredLocation": "panel",
     "workbench.activityBar.compact": true,
-    "workbench.editor.closeEmptyGroups": false
+    "workbench.editor.closeEmptyGroups": false,
+
+    // Extensions - Todo Tree
+    "todo-tree.ripgrep": "/Applications/Visual Studio Code.app/Contents/Resources/app/node_modules/@vscode/ripgrep/bin/rg"
 }
