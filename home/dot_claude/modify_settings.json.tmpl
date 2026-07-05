@@ -1,3 +1,9 @@
+#!/bin/bash
+# Merges desired settings into the current settings.json.
+# Keys managed by Claude Code (e.g. "model") are preserved rather than overwritten.
+set -euo pipefail
+
+desired=$(cat <<'DESIRED'
 {
   "tui": "fullscreen",
   "copyOnSelect": false,
@@ -56,3 +62,13 @@
     ]
   }
 }
+DESIRED
+)
+
+current=$(cat)
+
+if [[ -z "$current" ]]; then
+  printf '%s\n' "$desired" | jq --indent 2 '.'
+else
+  printf '%s' "$current" | jq --indent 2 --argjson desired "$desired" '. * $desired'
+fi
