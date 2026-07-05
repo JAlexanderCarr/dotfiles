@@ -67,6 +67,11 @@ DESIRED
 
 current=$(cat)
 
+if ! command -v jq &>/dev/null; then
+  printf '%s\n' "${current:-$desired}"
+  exit 0
+fi
+
 if [[ -z "$current" ]]; then
   printf '%s\n' "$desired" | jq --indent 2 '.'
 else
