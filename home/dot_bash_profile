@@ -4,3 +4,8 @@
 if [ -f "$HOME/.profile" ]; then
     . "$HOME/.profile"
 fi
+
+# Source .bashrc for interactive login shells (aliases, completions, tool inits)
+if [ -n "$PS1" ] && [ -f "$HOME/.bashrc" ]; then
+    . "$HOME/.bashrc"
+fi
