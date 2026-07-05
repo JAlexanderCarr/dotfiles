@@ -18,19 +18,27 @@ if [ -d "$HOME/.kubectx" ]; then
     export PATH="$PATH:$HOME/.kubectx"
 fi
 
-# NVM (Node Version Manager)
+# NVM (Node Version Manager) - add default node to PATH for login shells
 export NVM_DIR="$HOME/.nvm"
+if [ -d "$NVM_DIR" ] && [ -f "$NVM_DIR/alias/default" ]; then
+    _nvm_ver=$(cat "$NVM_DIR/alias/default")
+    # Resolve one level of alias indirection (lts/* → lts/jod → v22.x.x)
+    [ -f "$NVM_DIR/alias/$_nvm_ver" ] && _nvm_ver=$(cat "$NVM_DIR/alias/$_nvm_ver")
+    _nvm_ver="v${_nvm_ver#v}"
+    [ -d "$NVM_DIR/versions/node/$_nvm_ver/bin" ] && PATH="$NVM_DIR/versions/node/$_nvm_ver/bin:$PATH"
+    unset _nvm_ver
+fi
 
 # goenv (Go version manager)
 export GOENV_ROOT="$HOME/.goenv"
 if [ -d "$GOENV_ROOT" ]; then
-    export PATH="$GOENV_ROOT/bin:$PATH"
+    export PATH="$GOENV_ROOT/bin:$GOENV_ROOT/shims:$PATH"
 fi
 
 # pyenv (Python version manager)
 export PYENV_ROOT="$HOME/.pyenv"
 if [ -d "$PYENV_ROOT" ]; then
-    export PATH="$PYENV_ROOT/bin:$PATH"
+    export PATH="$PYENV_ROOT/bin:$PYENV_ROOT/shims:$PATH"
 fi
 
 # Obsidian CLI

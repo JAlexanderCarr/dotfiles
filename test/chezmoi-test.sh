@@ -190,6 +190,10 @@ check_dir "$HOME/.local/share/chezmoi/home" "chezmoi home directory"
 log_info "Applying chezmoi configuration..."
 chezmoi apply --force --verbose --keep-going || log_warn "Some scripts failed during chezmoi apply"
 
+# Source .profile now that it's installed — sets up PATH for the rest of this script
+# shellcheck disable=SC1090
+. "$HOME/.profile" 2>/dev/null || true
+
 # ============================================================================
 # VERIFY DOTFILES
 # ============================================================================
@@ -268,9 +272,7 @@ if [[ "$SKIP_PACKAGES" == "false" ]]; then
         check_fail "Devtools not fully installed"
     fi
 
-    # Go installation (via goenv)
-    export GOENV_ROOT="$HOME/.goenv"
-    export PATH="$GOENV_ROOT/bin:$GOENV_ROOT/shims:$PATH:/usr/local/bin:/usr/local/go/bin"
+    # Go installation (via goenv) — PATH provided by .profile sourced above
     if command -v go &>/dev/null; then
         check_pass "Go is installed ($(go version 2>/dev/null | head -c 30)...)"
     else
@@ -280,13 +282,21 @@ if [[ "$SKIP_PACKAGES" == "false" ]]; then
     # Node.js (via NVM)
     if [[ -d "$HOME/.nvm" ]]; then
         check_pass "NVM directory exists"
+        if command -v node &>/dev/null; then
+            check_pass "node is installed ($(node --version 2>/dev/null))"
+        else
+            check_fail "node is not on PATH"
+        fi
+        if command -v npm &>/dev/null; then
+            check_pass "npm is installed ($(npm --version 2>/dev/null))"
+        else
+            check_fail "npm is not on PATH"
+        fi
     else
         check_fail "NVM directory does not exist"
     fi
 
-    # Python installation (via pyenv)
-    export PYENV_ROOT="$HOME/.pyenv"
-    export PATH="$PYENV_ROOT/bin:$PYENV_ROOT/shims:$PATH"
+    # Python installation (via pyenv) — PATH provided by .profile sourced above
     if command -v python3 &>/dev/null || command -v python &>/dev/null; then
         check_pass "Python is installed ($(python3 --version 2>/dev/null || python --version 2>/dev/null))"
     else
@@ -345,6 +355,97 @@ if [[ "$SKIP_PACKAGES" == "false" ]]; then
     check_file "$VSCODE_CONFIG_DIR/keybindings.json" "VSCode keybindings.json"
 else
     log_info "Skipping package installation checks (--skip-packages)"
+fi
+
+# ============================================================================
+# VERIFY PATH CONFIGURATION
+# ============================================================================
+
+log_info "Verifying PATH configuration for bash and zsh..."
+
+# Helper: run a command in a clean bash subshell with only .profile sourced,
+# simulating a login non-interactive shell (e.g. bash -l script.sh, cron, ssh).
+_check_bash_profile_path() {
+    local cmd="$1"
+    local desc="$2"
+    local result
+    result=$(bash -c '. ~/.profile 2>/dev/null && '"$cmd" 2>/dev/null)
+    if [[ -n "$result" ]]; then
+        check_pass "$desc on PATH after sourcing .profile (bash)"
+    else
+        check_fail "$desc not on PATH after sourcing .profile (bash)"
+    fi
+}
+
+# ~/.local/bin must be on PATH from .profile
+if bash -c '. ~/.profile 2>/dev/null && echo "$PATH"' 2>/dev/null | grep -q "$HOME/.local/bin"; then
+    check_pass ".profile adds ~/.local/bin to PATH"
+else
+    check_fail ".profile does not add ~/.local/bin to PATH"
+fi
+
+# NVM: node and npm reachable via default alias path in .profile
+if [[ -d "$HOME/.nvm" ]]; then
+    _check_bash_profile_path "command -v node" "node"
+    _check_bash_profile_path "command -v npm" "npm"
+
+    # NVM shell function must be loaded in interactive bash (.bashrc sources nvm.sh)
+    _nvm_ver=$(bash -i -c 'nvm --version' 2>/dev/null)
+    if [[ -n "$_nvm_ver" ]]; then
+        check_pass "NVM is functional in interactive bash (v${_nvm_ver})"
+    else
+        check_fail "NVM is not functional in interactive bash (.bashrc may not load nvm.sh)"
+    fi
+    unset _nvm_ver
+fi
+
+# goenv: go reachable via shims added by .profile
+if [[ -d "$HOME/.goenv" ]]; then
+    _check_bash_profile_path "command -v go" "go"
+fi
+
+# pyenv: python3 reachable via shims added by .profile
+if [[ -d "$HOME/.pyenv" ]]; then
+    _check_bash_profile_path "command -v python3" "python3"
+fi
+
+unset -f _check_bash_profile_path
+
+# zsh PATH checks (if zsh is available)
+if command -v zsh &>/dev/null; then
+    # Interactive zsh sources .zshrc → NVM is loaded
+    if [[ -d "$HOME/.nvm" ]]; then
+        _zsh_node=$(zsh -i -c 'command -v node' 2>/dev/null)
+        if [[ -n "$_zsh_node" ]]; then
+            check_pass "node is on PATH in interactive zsh"
+        else
+            check_fail "node is not on PATH in interactive zsh (.zshrc may not load NVM)"
+        fi
+        unset _zsh_node
+    fi
+
+    # Login zsh sources .zprofile → .profile → goenv/pyenv shims are on PATH
+    if [[ -d "$HOME/.goenv" ]]; then
+        _zsh_go=$(zsh -l -c 'command -v go' 2>/dev/null)
+        if [[ -n "$_zsh_go" ]]; then
+            check_pass "go is on PATH in login zsh"
+        else
+            check_fail "go is not on PATH in login zsh (.zprofile/.profile may not add goenv shims)"
+        fi
+        unset _zsh_go
+    fi
+
+    if [[ -d "$HOME/.pyenv" ]]; then
+        _zsh_py=$(zsh -l -c 'command -v python3' 2>/dev/null)
+        if [[ -n "$_zsh_py" ]]; then
+            check_pass "python3 is on PATH in login zsh"
+        else
+            check_fail "python3 is not on PATH in login zsh (.zprofile/.profile may not add pyenv shims)"
+        fi
+        unset _zsh_py
+    fi
+else
+    log_warn "zsh not installed — skipping zsh PATH checks"
 fi
 
 # ============================================================================
