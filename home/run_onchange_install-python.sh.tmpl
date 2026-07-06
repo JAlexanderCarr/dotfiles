@@ -45,16 +45,9 @@ install_pyenv_deps() {
             readline-devel sqlite sqlite-devel openssl-devel tk-devel libffi-devel xz-devel git curl
     elif [[ -f /etc/centos-release ]] || [[ -f /etc/redhat-release ]] || [[ -f /etc/system-release ]]; then
         with_spinner "Installing Development Tools" sudo yum groupinstall -y -q "Development Tools"
-        # Check if this is Amazon Linux 2 (needs openssl11-devel for modern Python)
-        if grep -q "Amazon Linux 2" /etc/system-release 2>/dev/null; then
-            with_spinner "Installing build dependencies" sudo yum install -y -q zlib-devel bzip2 bzip2-devel \
-                readline-devel sqlite sqlite-devel openssl11-devel xz xz-devel libffi-devel \
-                ncurses-devel patch tk-devel git curl
-        else
-            with_spinner "Installing build dependencies" sudo yum install -y -q zlib-devel bzip2 bzip2-devel \
-                readline-devel sqlite sqlite-devel openssl-devel xz xz-devel libffi-devel \
-                ncurses-devel patch tk-devel git curl
-        fi
+        with_spinner "Installing build dependencies" sudo yum install -y -q zlib-devel bzip2 bzip2-devel \
+            readline-devel sqlite sqlite-devel openssl-devel xz xz-devel libffi-devel \
+            ncurses-devel patch tk-devel git curl
     elif [[ -f /etc/arch-release ]]; then
         with_spinner "Installing build dependencies" sudo pacman -Sy --noconfirm --quiet base-devel openssl zlib \
             xz tk git curl
@@ -68,12 +61,6 @@ install_pyenv_deps() {
 enable_git_https_override 2>/dev/null || true
 
 install_pyenv_deps
-
-# Configure OpenSSL 1.1 paths for Amazon Linux 2 (pyenv needs these for compilation)
-if grep -q "Amazon Linux 2" /etc/system-release 2>/dev/null; then
-    export CFLAGS="-I/usr/include/openssl11"
-    export LDFLAGS="-L/usr/lib64/openssl11"
-fi
 
 # Install or update pyenv (idempotent - updates in place)
 if [[ -d "$PYENV_ROOT" ]]; then

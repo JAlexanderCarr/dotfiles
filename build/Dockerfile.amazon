@@ -1,21 +1,22 @@
-FROM amazonlinux:2
+FROM amazonlinux:2023
 
 # Base tooling (root)
-RUN yum -y update && \
-    yum -y install \
+RUN dnf -y update && \
+    dnf -y install --allowerasing \
       sudo \
       ca-certificates \
       curl \
       wget \
       git \
       bash-completion \
-      pkgconfig \
+      pkgconf-pkg-config \
       gnupg2 \
       tar \
       make \
+      tmux \
       unzip \
       fontconfig && \
-    yum clean all
+    dnf clean all
 
 # Create a non-root user with sudo access
 # Amazon Linux uses wheel group for sudo
