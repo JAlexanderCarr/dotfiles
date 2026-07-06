@@ -17,6 +17,7 @@ RUN apt-get update -y && \
       lsb-release \
       tar \
       make \
+      tmux \
       unzip \
       fontconfig && \
     apt-get clean && \
