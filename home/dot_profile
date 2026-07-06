@@ -11,7 +11,7 @@ if [ -d "$HOME/.local/bin" ]; then
 fi
 
 # Directory listing colors
-export LS_COLORS="${LS_COLORS}:di=04;36:ex=91"
+export LS_COLORS="${LS_COLORS:-}:di=04;36:ex=91"
 
 # Kubernetes tools
 if [ -d "$HOME/.kubectx" ]; then
