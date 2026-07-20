@@ -88,6 +88,32 @@
     {
       "customType": "regex",
       "managerFilePatterns": [
+        "/home/run_onchange_install-kubernetes\\.sh\\.tmpl$/"
+      ],
+      "matchStrings": [
+        "KUBECTX_VERSION=\"(?<currentValue>[^\"]+)\""
+      ],
+      "depNameTemplate": "kubectx",
+      "datasourceTemplate": "github-releases",
+      "packageNameTemplate": "ahmetb/kubectx",
+      "extractVersionTemplate": "^v(?<version>.*)$"
+    },
+    {
+      "customType": "regex",
+      "managerFilePatterns": [
+        "/home/run_onchange_install-lima\\.sh\\.tmpl$/"
+      ],
+      "matchStrings": [
+        "LIMA_VERSION=\"(?<currentValue>[^\"]+)\""
+      ],
+      "depNameTemplate": "lima",
+      "datasourceTemplate": "github-releases",
+      "packageNameTemplate": "lima-vm/lima",
+      "extractVersionTemplate": "^v(?<version>.*)$"
+    },
+    {
+      "customType": "regex",
+      "managerFilePatterns": [
         "/build/Dockerfile\\.(ubuntu|amazon|manual|dev)$/"
       ],
       "matchStrings": [

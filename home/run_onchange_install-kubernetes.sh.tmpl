@@ -25,6 +25,7 @@ ARCH="$(uname -m)"
 
 KIND_VERSION="0.32.0"
 KUBECTL_VERSION="1.36.2"
+KUBECTX_VERSION="0.11.0"
 
 # Normalize architecture
 ARCH_STD="$ARCH"
@@ -64,10 +65,10 @@ install_k8s_macos() {
     sudo rm -rf /opt/kubectx >> "$CHEZMOI_LOG_FILE" 2>&1 || true
     sudo rm -f /usr/local/bin/kubectx /usr/local/bin/kubens >> "$CHEZMOI_LOG_FILE" 2>&1 || true
 
-    log_silent "Downloading kubectx"
-    curl -fsSL -o /tmp/kubectx.zip "https://github.com/ahmetb/kubectx/archive/refs/heads/master.zip" >> "$CHEZMOI_LOG_FILE" 2>&1
+    log_silent "Downloading kubectx ${KUBECTX_VERSION}"
+    curl -fsSL -o /tmp/kubectx.zip "https://github.com/ahmetb/kubectx/archive/refs/tags/v${KUBECTX_VERSION}.zip" >> "$CHEZMOI_LOG_FILE" 2>&1
     unzip -q /tmp/kubectx.zip -d /tmp >> "$CHEZMOI_LOG_FILE" 2>&1
-    with_spinner "Installing kubectx/kubens" sudo mv /tmp/kubectx-master /opt/kubectx
+    with_spinner "Installing kubectx/kubens ${KUBECTX_VERSION}" sudo mv "/tmp/kubectx-${KUBECTX_VERSION}" /opt/kubectx
     rm -f /tmp/kubectx.zip >> "$CHEZMOI_LOG_FILE" 2>&1
 
     # Create symlinks
@@ -104,10 +105,10 @@ install_k8s_linux() {
     sudo rm -rf /opt/kubectx >> "$CHEZMOI_LOG_FILE" 2>&1 || true
     sudo rm -f /usr/local/bin/kubectx /usr/local/bin/kubens >> "$CHEZMOI_LOG_FILE" 2>&1 || true
 
-    log_silent "Downloading kubectx"
-    curl -fsSL -o /tmp/kubectx.zip "https://github.com/ahmetb/kubectx/archive/refs/heads/master.zip" >> "$CHEZMOI_LOG_FILE" 2>&1
+    log_silent "Downloading kubectx ${KUBECTX_VERSION}"
+    curl -fsSL -o /tmp/kubectx.zip "https://github.com/ahmetb/kubectx/archive/refs/tags/v${KUBECTX_VERSION}.zip" >> "$CHEZMOI_LOG_FILE" 2>&1
     unzip -q /tmp/kubectx.zip -d /tmp >> "$CHEZMOI_LOG_FILE" 2>&1
-    with_spinner "Installing kubectx/kubens" sudo mv /tmp/kubectx-master /opt/kubectx
+    with_spinner "Installing kubectx/kubens ${KUBECTX_VERSION}" sudo mv "/tmp/kubectx-${KUBECTX_VERSION}" /opt/kubectx
     rm -f /tmp/kubectx.zip >> "$CHEZMOI_LOG_FILE" 2>&1
 
     # Create symlinks
