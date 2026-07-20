@@ -213,8 +213,12 @@ check_file "$HOME/.gitconfig" "gitconfig"
 check_file_contains "$HOME/.gitconfig" "Test User" "gitconfig contains user name"
 check_file_contains "$HOME/.gitconfig" "test@example.com" "gitconfig contains user email"
 
-# No URL rewrite: https:// and ssh:// clones should both work unmodified
-if git config --get-regexp url >/dev/null 2>&1; then
+# No URL rewrite: https:// and ssh:// clones should both work unmodified.
+# Read the rendered ~/.gitconfig directly (-f), not the ambient config for
+# the test script's cwd, and anchor to the "url." section specifically — an
+# unanchored `--get-regexp url` also matches legitimate keys like
+# remote.origin.url.
+if git config -f "$HOME/.gitconfig" --get-regexp '^url\.' >/dev/null 2>&1; then
     check_fail "gitconfig has no url.*.insteadof rewrite"
 else
     check_pass "gitconfig has no url.*.insteadof rewrite"
