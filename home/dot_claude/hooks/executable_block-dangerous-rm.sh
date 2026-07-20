@@ -1,6 +1,10 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+# Fail closed: without jq this hook can't inspect the command at all, so a
+# missing jq must block rather than silently letting everything through.
+command -v jq >/dev/null 2>&1 || { echo "jq required for safety hook" >&2; exit 2; }
+
 INPUT=$(cat)
 COMMAND=$(echo "$INPUT" | jq -r '.tool_input.command // empty')
 
