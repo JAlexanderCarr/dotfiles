@@ -11,7 +11,12 @@ if [ -d "$HOME/.local/bin" ]; then
 fi
 
 # Directory listing colors
+# GNU coreutils (Linux) palette
 export LS_COLORS="${LS_COLORS:-}:di=04;36:ex=91"
+# BSD ls (macOS) palette — CLICOLOR enables color, LSCOLORS sets it.
+# Directory: bold cyan; executable: bold red; everything else default.
+export CLICOLOR=1
+export LSCOLORS="GxxxxxxxBxxxxxxxxxxxxx"
 
 # Default editor for crontab, systemctl edit, kubectl edit, etc.
 if command -v nvim >/dev/null 2>&1; then
