@@ -1,0 +1,49 @@
+#!/bin/bash
+# chezmoi:template:left-delimiter="{{" right-delimiter="}}"
+# Generate an SSH key for GitHub - optional, prompt-gated by chezmoi config
+# (see "Generate an ed25519 SSH key for GitHub" in `chezmoi init`).
+#
+# This script only creates the key and wires it into ~/.ssh/config; it never
+# prints the key material. The public key and registration steps are
+# surfaced by run_once_after_z-welcome.sh.tmpl instead, since that script
+# runs last and its output is easy to find at the end of `chezmoi apply`.
+#
+# Idempotent: re-running does nothing if the key and config block already
+# exist.
+
+{{- if not .generateSshKey }}
+exit 0
+{{- end }}
+
+set -euo pipefail
+
+SSH_DIR="${HOME}/.ssh"
+KEY_NAME="{{ .sshKeyName }}"
+KEY_PATH="${SSH_DIR}/${KEY_NAME}"
+SSH_CONFIG="${SSH_DIR}/config"
+MARKER="# github.com (managed by chezmoi)"
+
+mkdir -p "$SSH_DIR"
+chmod 700 "$SSH_DIR"
+
+if [[ ! -f "$KEY_PATH" ]]; then
+    ssh-keygen -t ed25519 -C "{{ .email }}" -f "$KEY_PATH" -N "" -q
+fi
+chmod 600 "$KEY_PATH"
+[[ -f "${KEY_PATH}.pub" ]] && chmod 644 "${KEY_PATH}.pub"
+
+# Add a github.com block to ~/.ssh/config, once, identified by $MARKER so
+# re-running this script (or chezmoi apply --force) doesn't duplicate it.
+if [[ ! -f "$SSH_CONFIG" ]] || ! grep -qF "$MARKER" "$SSH_CONFIG"; then
+    {
+        echo ""
+        echo "$MARKER"
+        echo "Host github.com"
+        echo "    IdentityFile ${KEY_PATH}"
+        echo "    AddKeysToAgent yes"
+        if [[ "$(uname -s)" == "Darwin" ]]; then
+            echo "    UseKeychain yes"
+        fi
+    } >> "$SSH_CONFIG"
+    chmod 600 "$SSH_CONFIG"
+fi

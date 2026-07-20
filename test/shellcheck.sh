@@ -70,6 +70,8 @@ data:
   email: "test@example.com"
   githubUsername: "testuser"
   sshSigningKey: "~/.ssh/id_ed25519.pub"
+  generateSshKey: true
+  sshKeyName: "id_ed25519"
   packages:
     devtools: true
     docker: true

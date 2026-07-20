@@ -11,6 +11,16 @@
 {{- $sshSigningKey := promptStringOnce . "sshSigningKey" "SSH signing key path" "~/.ssh/id_github.pub" -}}
 
 {{- /* ═══════════════════════════════════════════════════════════════════════ */ -}}
+{{- /*                                 SSH                                     */ -}}
+{{- /* ═══════════════════════════════════════════════════════════════════════ */ -}}
+
+{{- $generateSshKey := promptBoolOnce . "generateSshKey" "Generate an ed25519 SSH key for GitHub" false -}}
+{{- $sshKeyName := "" -}}
+{{- if $generateSshKey -}}
+{{-   $sshKeyName = promptStringOnce . "sshKeyName" "SSH key filename" "id_github" -}}
+{{- end -}}
+
+{{- /* ═══════════════════════════════════════════════════════════════════════ */ -}}
 {{- /*                              Packages                                   */ -}}
 {{- /* ═══════════════════════════════════════════════════════════════════════ */ -}}
 
@@ -42,6 +52,8 @@ data:
   email: {{ $email | quote }}
   githubUsername: {{ $githubUsername | quote }}
   sshSigningKey: {{ $sshSigningKey | quote }}
+  generateSshKey: {{ $generateSshKey }}
+  sshKeyName: {{ $sshKeyName | quote }}
   packages:
     devtools: {{ $installDevtools }}
     neovim: {{ $installNeovim }}

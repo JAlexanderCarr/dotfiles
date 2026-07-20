@@ -148,6 +148,8 @@ data:
   email: "test@example.com"
   githubUsername: "testuser"
   sshSigningKey: "~/.ssh/id_ed25519.pub"
+  generateSshKey: true
+  sshKeyName: "id_github_test"
   packages:
     devtools: true
     docker: false
@@ -210,6 +212,35 @@ check_file "$HOME/.zprofile" "zprofile"
 check_file "$HOME/.gitconfig" "gitconfig"
 check_file_contains "$HOME/.gitconfig" "Test User" "gitconfig contains user name"
 check_file_contains "$HOME/.gitconfig" "test@example.com" "gitconfig contains user email"
+
+# No URL rewrite: https:// and ssh:// clones should both work unmodified
+if git config --get-regexp url >/dev/null 2>&1; then
+    check_fail "gitconfig has no url.*.insteadof rewrite"
+else
+    check_pass "gitconfig has no url.*.insteadof rewrite"
+fi
+
+# SSH key bootstrap (prompt-gated: generateSshKey/sshKeyName in the test config above)
+check_file "$HOME/.ssh/id_github_test" "SSH private key"
+check_file "$HOME/.ssh/id_github_test.pub" "SSH public key"
+check_file_contains "$HOME/.ssh/config" "Host github.com" "ssh config has a github.com block"
+if [[ "$(stat -c '%a' "$HOME/.ssh" 2>/dev/null || stat -f '%Lp' "$HOME/.ssh")" == "700" ]]; then
+    check_pass "~/.ssh is mode 700"
+else
+    check_fail "~/.ssh is mode 700"
+fi
+if [[ "$(stat -c '%a' "$HOME/.ssh/id_github_test" 2>/dev/null || stat -f '%Lp' "$HOME/.ssh/id_github_test")" == "600" ]]; then
+    check_pass "SSH private key is mode 600"
+else
+    check_fail "SSH private key is mode 600"
+fi
+# Re-apply must not duplicate the managed github.com block
+chezmoi apply --force --keep-going >/dev/null 2>&1 || true
+if [[ "$(grep -c 'github.com (managed by chezmoi)' "$HOME/.ssh/config")" == "1" ]]; then
+    check_pass "SSH config block is idempotent across re-apply"
+else
+    check_fail "SSH config block is idempotent across re-apply"
+fi
 
 # Neovim configuration
 check_file "$HOME/.config/nvim/init.vim" "nvim init.vim"
