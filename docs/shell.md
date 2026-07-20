@@ -43,7 +43,7 @@ The Zsh prompt (`~/.zshrc`) shows Git branch, Kubernetes context/namespace, comm
 
 ## Environment Overrides
 
-The shell profile sources `~/.env` if it exists — use it for machine-local env vars not tracked by chezmoi:
+`EDITOR`/`VISUAL` default to `nvim` if it's installed, else `vi` (`~/.profile`). The shell profile also sources `~/.env` if it exists — use it for machine-local env vars not tracked by chezmoi:
 
 ```sh
 export AWS_PROFILE=myprofile
@@ -57,4 +57,18 @@ export EDITOR=code
 - Default branch: `main`, remote: `origin`, pull strategy: rebase
 - Commit signing: SSH (configured signing key)
 - Editor: `nvim`
-- GitHub HTTPS URLs rewritten to SSH
+- `fetch.prune`, `rerere.enabled`, `diff.algorithm = histogram`, `merge.conflictstyle = zdiff3`
+
+There is no URL rewrite — git uses whatever the remote URL specifies, so either an HTTPS token or an SSH key works unmodified.
+
+## SSH Key Bootstrap
+
+`chezmoi init` optionally prompts to generate an ed25519 SSH key for GitHub (defaults to off). If enabled, it creates `~/.ssh/<name>` (default `id_github`, matching the default signing key) if one doesn't already exist, and wires it into a `github.com` block in `~/.ssh/config`. The public key and GitHub registration steps are printed at the very end of `chezmoi apply`'s output.
+
+## tmux
+
+`~/.tmux.conf` sets mouse support, vi-style copy-mode, truecolor passthrough, a larger scrollback, and a status line matching the shell prompt's palette (yellow git branch, green host).
+
+## Readline (bash)
+
+`~/.inputrc` makes bash's tab completion case-insensitive and hyphen/underscore-insensitive, shows all matches on an ambiguous completion instead of just ringing the bell, and filters up/down arrow history search by what's already typed.
