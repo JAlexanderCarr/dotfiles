@@ -99,23 +99,6 @@ print_info() {
     printf "  ${CLR_DIM}${message}${CLR_RESET}\n"
 }
 
-# Override git to use HTTPS instead of SSH during installation
-# This ensures git clone works in environments without SSH keys configured
-# Usage: enable_git_https_override (call once, then git commands will use HTTPS)
-enable_git_https_override() {
-    git() {
-        GIT_CONFIG_NOSYSTEM=1 \
-        GIT_CONFIG_GLOBAL=/dev/null \
-        command git \
-          -c url."https://github.com/".insteadof=ssh://github.com/ \
-          -c url."https://github.com/".insteadof=ssh://git@github.com/ \
-          -c url."https://github.com/".insteadof=git@github.com: \
-          -c url."https://github.com/".insteadof=git://github.com/ \
-          "$@"
-    }
-    export -f git
-}
-
 # Show spinner while a command runs
 # Usage: with_spinner "message" command args...
 with_spinner() {

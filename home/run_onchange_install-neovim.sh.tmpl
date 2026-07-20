@@ -63,38 +63,14 @@ install_neovim() {
 log_section "Neovim Installation"
 print_header "Neovim ${NVIM_VERSION}"
 
-# Ensure git uses HTTPS for GitHub during plugin installs
-enable_git_https_override 2>/dev/null || true
-
 install_neovim
 
 # Install nvim plugins if available
 log_section "Neovim Plugins Installation"
 
 if [[ -x "$NVIM_BIN" ]] && [[ -f "$HOME/.local/share/nvim/site/autoload/plug.vim" ]]; then
-    # Override git to use HTTPS for GitHub during plugin installs.
-    # The shell function from enable_git_https_override does not carry into
-    # nvim's job system, so we export env vars that git itself honours.
-    export GIT_CONFIG_NOSYSTEM=1
-    export GIT_CONFIG_GLOBAL=/dev/null
-    export GIT_CONFIG_COUNT=4
-    export GIT_CONFIG_KEY_0="url.https://github.com/.insteadOf"
-    export GIT_CONFIG_VALUE_0="ssh://github.com/"
-    export GIT_CONFIG_KEY_1="url.https://github.com/.insteadOf"
-    export GIT_CONFIG_VALUE_1="ssh://git@github.com/"
-    export GIT_CONFIG_KEY_2="url.https://github.com/.insteadOf"
-    export GIT_CONFIG_VALUE_2="git@github.com:"
-    export GIT_CONFIG_KEY_3="url.https://github.com/.insteadOf"
-    export GIT_CONFIG_VALUE_3="git://github.com/"
-
     # --sync makes PlugInstall block until all clones finish (default is async)
     with_spinner "Installing plugins" "$NVIM_BIN" --headless +"PlugInstall --sync" +qall
-
-    unset GIT_CONFIG_NOSYSTEM GIT_CONFIG_GLOBAL GIT_CONFIG_COUNT
-    unset GIT_CONFIG_KEY_0 GIT_CONFIG_VALUE_0
-    unset GIT_CONFIG_KEY_1 GIT_CONFIG_VALUE_1
-    unset GIT_CONFIG_KEY_2 GIT_CONFIG_VALUE_2
-    unset GIT_CONFIG_KEY_3 GIT_CONFIG_VALUE_3
 else
     print_fail "Cannot install plugins (nvim or vim-plug not found)"
     exit 1
