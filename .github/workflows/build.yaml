@@ -26,6 +26,16 @@ jobs:
         export PATH="$HOME/.local/bin:$PATH"
         make shellcheck
 
+  # Test the Claude Code safety hooks directly (no container needed)
+  test-hooks:
+    runs-on: ubuntu-latest
+    name: Test Claude Hooks
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v7
+    - name: Run hooks test
+      run: make test-hooks
+
   # Detect if Dockerfile.dev changed
   check-dev:
     runs-on: ubuntu-latest
@@ -203,7 +213,7 @@ jobs:
   # Test Summary
   test-summary:
     runs-on: ubuntu-latest
-    needs: [shellcheck, test-ubuntu, test-amazon, test-dev]
+    needs: [shellcheck, test-hooks, test-ubuntu, test-amazon, test-dev]
     if: always()
     steps:
     - name: Print and Summarize Test Results
@@ -213,6 +223,11 @@ jobs:
           SHELLCHECK_ICON="✅"
         else
           SHELLCHECK_ICON="❌"
+        fi
+        if [ "${{ needs.test-hooks.result }}" = "success" ]; then
+          HOOKS_ICON="✅"
+        else
+          HOOKS_ICON="❌"
         fi
         if [ "${{ needs.test-ubuntu.result }}" = "success" ]; then
           UBUNTU_ICON="✅"
@@ -238,6 +253,7 @@ jobs:
         echo "================================"
         echo ""
         echo "Shellcheck: $SHELLCHECK_ICON ${{ needs.shellcheck.result }}"
+        echo "Hooks:   $HOOKS_ICON ${{ needs.test-hooks.result }}"
         echo "Ubuntu:  $UBUNTU_ICON ${{ needs.test-ubuntu.result }}"
         echo "Amazon:  $AMAZON_ICON ${{ needs.test-amazon.result }}"
         echo "Dev:     $DEV_ICON ${{ needs.test-dev.result }}"
@@ -250,12 +266,13 @@ jobs:
         echo "| Container | Status | Result |" >> $GITHUB_STEP_SUMMARY
         echo "|-----------|--------|--------|" >> $GITHUB_STEP_SUMMARY
         echo "| Shellcheck | $SHELLCHECK_ICON | ${{ needs.shellcheck.result }} |" >> $GITHUB_STEP_SUMMARY
+        echo "| Hooks | $HOOKS_ICON | ${{ needs.test-hooks.result }} |" >> $GITHUB_STEP_SUMMARY
         echo "| Ubuntu | $UBUNTU_ICON | ${{ needs.test-ubuntu.result }} |" >> $GITHUB_STEP_SUMMARY
         echo "| Amazon | $AMAZON_ICON | ${{ needs.test-amazon.result }} |" >> $GITHUB_STEP_SUMMARY
         echo "| Dev | $DEV_ICON | ${{ needs.test-dev.result }} |" >> $GITHUB_STEP_SUMMARY
 
     - name: Check for failures
-      if: needs.shellcheck.result != 'success' || needs.test-ubuntu.result != 'success' || needs.test-amazon.result != 'success' || (needs.test-dev.result != 'success' && needs.test-dev.result != 'skipped')
+      if: needs.shellcheck.result != 'success' || needs.test-hooks.result != 'success' || needs.test-ubuntu.result != 'success' || needs.test-amazon.result != 'success' || (needs.test-dev.result != 'success' && needs.test-dev.result != 'skipped')
       run: |
         echo "One or more tests failed!"
         exit 1

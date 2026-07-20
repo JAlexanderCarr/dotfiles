@@ -40,6 +40,10 @@ build-dev: ## Build the dev container image (single-arch, local use)
 shellcheck: ## Lint shell scripts (and rendered chezmoi templates) with shellcheck
 	./test/shellcheck.sh
 
+.PHONY: test-hooks
+test-hooks: ## Run Claude Code safety hook tests (host, no container needed)
+	./test/hooks-test.sh
+
 .PHONY: test
 test: test-ubuntu test-amazon ## Run chezmoi tests on all containers
 
@@ -121,6 +125,7 @@ help: ## Show this help
 	@echo "  build-manual           Build the manual testing Docker image"
 	@echo "  build-dev              Build the dev container image (single-arch)"
 	@echo "  shellcheck             Lint shell scripts and rendered chezmoi templates"
+	@echo "  test-hooks             Run Claude Code safety hook tests (host, no container)"
 	@echo "  test                   Run chezmoi tests on all containers"
 	@echo "  test-ubuntu            Run chezmoi test on the Ubuntu container"
 	@echo "  test-amazon            Run chezmoi test on the Amazon Linux container"
