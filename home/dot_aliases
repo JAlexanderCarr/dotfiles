@@ -16,7 +16,9 @@ alias la='ls -A'
 alias l='ls -CF'
 
 # git aliases
-alias git='hub'
+# hub provides `git sync`; only shadow git with it when it's actually installed,
+# otherwise every git invocation would break on machines without hub.
+command -v hub >/dev/null && alias git='hub'
 alias g='git'
 alias gs='git status'
 alias ga='git add'

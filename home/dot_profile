@@ -13,6 +13,15 @@ fi
 # Directory listing colors
 export LS_COLORS="${LS_COLORS:-}:di=04;36:ex=91"
 
+# Default editor for crontab, systemctl edit, kubectl edit, etc.
+if command -v nvim >/dev/null 2>&1; then
+    export EDITOR="nvim"
+    export VISUAL="nvim"
+else
+    export EDITOR="vi"
+    export VISUAL="vi"
+fi
+
 # Kubernetes tools
 if [ -d "$HOME/.kubectx" ]; then
     export PATH="$PATH:$HOME/.kubectx"
