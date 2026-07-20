@@ -49,8 +49,14 @@ jobs:
       run: |
         docker buildx build --platform linux/amd64,linux/arm64 \
           -f ./build/Dockerfile.ubuntu \
-          -t ghcr.io/${{ github.repository }}/ubuntu-dotfiles:latest \
+          -t ghcr.io/${{ github.repository }}/ubuntu-dotfiles:ci-${{ github.run_id }} \
           --push .
+    - name: Promote to latest (push to main only)
+      if: github.event_name == 'push'
+      run: |
+        docker buildx imagetools create \
+          -t ghcr.io/${{ github.repository }}/ubuntu-dotfiles:latest \
+          ghcr.io/${{ github.repository }}/ubuntu-dotfiles:ci-${{ github.run_id }}
 
   # Build Amazon Container
   build-amazon:
@@ -73,8 +79,14 @@ jobs:
       run: |
         docker buildx build --platform linux/amd64,linux/arm64 \
           -f ./build/Dockerfile.amazon \
-          -t ghcr.io/${{ github.repository }}/amazon-dotfiles:latest \
+          -t ghcr.io/${{ github.repository }}/amazon-dotfiles:ci-${{ github.run_id }} \
           --push .
+    - name: Promote to latest (push to main only)
+      if: github.event_name == 'push'
+      run: |
+        docker buildx imagetools create \
+          -t ghcr.io/${{ github.repository }}/amazon-dotfiles:latest \
+          ghcr.io/${{ github.repository }}/amazon-dotfiles:ci-${{ github.run_id }}
 
   # Build Dev Container
   build-dev:
@@ -124,8 +136,8 @@ jobs:
         password: ${{ secrets.GHCR_TOKEN }}
     - name: Load Ubuntu image
       run: |
-        docker pull ghcr.io/${{ github.repository }}/ubuntu-dotfiles:latest
-        docker tag ghcr.io/${{ github.repository }}/ubuntu-dotfiles:latest ubuntu-dotfiles:latest
+        docker pull ghcr.io/${{ github.repository }}/ubuntu-dotfiles:ci-${{ github.run_id }}
+        docker tag ghcr.io/${{ github.repository }}/ubuntu-dotfiles:ci-${{ github.run_id }} ubuntu-dotfiles:latest
     - name: Run chezmoi installation test
       run: make test-ubuntu
 
@@ -147,8 +159,8 @@ jobs:
         password: ${{ secrets.GHCR_TOKEN }}
     - name: Load Amazon image
       run: |
-        docker pull ghcr.io/${{ github.repository }}/amazon-dotfiles:latest
-        docker tag ghcr.io/${{ github.repository }}/amazon-dotfiles:latest amazon-dotfiles:latest
+        docker pull ghcr.io/${{ github.repository }}/amazon-dotfiles:ci-${{ github.run_id }}
+        docker tag ghcr.io/${{ github.repository }}/amazon-dotfiles:ci-${{ github.run_id }} amazon-dotfiles:latest
     - name: Run chezmoi installation test
       run: make test-amazon
 
