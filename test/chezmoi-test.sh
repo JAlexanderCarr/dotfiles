@@ -141,7 +141,7 @@ log_info "Configuring chezmoi..."
 mkdir -p "$HOME/.config/chezmoi"
 
 # Create test configuration
-# Enable packages that can be tested in a container (docker, fonts, and lima binary install are excluded)
+# Enable packages that can be tested in a container (docker and fonts are excluded)
 cat > "$HOME/.config/chezmoi/chezmoi.yaml" << 'EOF'
 data:
   name: "Test User"
