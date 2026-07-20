@@ -25,6 +25,8 @@ The `ai` add-on installs global Claude Code configuration managed by chezmoi.
 
 Hooks are permanent — blocked commands cannot be overridden via permission prompts or user approval.
 
+All four hooks require `jq` (installed by the `devtools` package) and fail closed — a missing `jq` blocks the action rather than silently letting it through.
+
 ## Provider Setup
 
 During `chezmoi init`, you'll be prompted to choose a Claude provider:
