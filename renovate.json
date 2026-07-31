@@ -62,10 +62,10 @@
     {
       "customType": "regex",
       "managerFilePatterns": [
-        "/home/run_onchange_install-kubernetes\\.sh\\.tmpl$/"
+        "/home/\\.chezmoiexternal\\.yaml\\.tmpl$/"
       ],
       "matchStrings": [
-        "KIND_VERSION=\"(?<currentValue>[^\"]+)\""
+        "\\$kindVersion := \"(?<currentValue>[^\"]+)\""
       ],
       "depNameTemplate": "kind",
       "datasourceTemplate": "github-releases",
@@ -75,14 +75,40 @@
     {
       "customType": "regex",
       "managerFilePatterns": [
-        "/home/run_onchange_install-kubernetes\\.sh\\.tmpl$/"
+        "/home/\\.chezmoiexternal\\.yaml\\.tmpl$/"
       ],
       "matchStrings": [
-        "KUBECTL_VERSION=\"(?<currentValue>[^\"]+)\""
+        "\\$kubectlVersion := \"(?<currentValue>[^\"]+)\""
       ],
       "depNameTemplate": "kubectl",
       "datasourceTemplate": "github-releases",
       "packageNameTemplate": "kubernetes/kubernetes",
+      "extractVersionTemplate": "^v(?<version>.*)$"
+    },
+    {
+      "customType": "regex",
+      "managerFilePatterns": [
+        "/home/\\.chezmoiexternal\\.yaml\\.tmpl$/"
+      ],
+      "matchStrings": [
+        "\\$kubectxVersion := \"(?<currentValue>[^\"]+)\""
+      ],
+      "depNameTemplate": "kubectx",
+      "datasourceTemplate": "github-releases",
+      "packageNameTemplate": "ahmetb/kubectx",
+      "extractVersionTemplate": "^v(?<version>.*)$"
+    },
+    {
+      "customType": "regex",
+      "managerFilePatterns": [
+        "/home/\\.chezmoiexternal\\.yaml\\.tmpl$/"
+      ],
+      "matchStrings": [
+        "\\$limaVersion := \"(?<currentValue>[^\"]+)\""
+      ],
+      "depNameTemplate": "lima",
+      "datasourceTemplate": "github-releases",
+      "packageNameTemplate": "lima-vm/lima",
       "extractVersionTemplate": "^v(?<version>.*)$"
     },
     {
@@ -98,10 +124,10 @@
     {
       "customType": "regex",
       "managerFilePatterns": [
-        "/home/run_onchange_install-neovim\\.sh\\.tmpl$/"
+        "/home/\\.chezmoiexternal\\.yaml\\.tmpl$/"
       ],
       "matchStrings": [
-        "NVIM_VERSION=\"(?<currentValue>[^\"]+)\""
+        "\\$nvimVersion := \"(?<currentValue>[^\"]+)\""
       ],
       "depNameTemplate": "neovim",
       "datasourceTemplate": "github-releases",

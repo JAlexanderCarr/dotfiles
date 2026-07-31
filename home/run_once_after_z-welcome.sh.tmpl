@@ -102,3 +102,21 @@ if [[ -f "$CHEZMOI_LATEST_LOG" ]]; then
 printf "${CLR_DIM}  Installation log: ${CHEZMOI_LATEST_LOG}${CLR_RESET}\n"
 printf "\n"
 fi
+{{- if .generateSshKey }}
+
+SSH_KEY_PATH="${HOME}/.ssh/{{ .sshKeyName }}.pub"
+
+printf "${CLR_BOLD}${CLR_BLUE}▸${CLR_RESET} ${CLR_BOLD}SSH Key for GitHub${CLR_RESET}\n"
+if [[ -f "$SSH_KEY_PATH" ]]; then
+printf "  ${CLR_DIM}Public key (%s):${CLR_RESET}\n" "$SSH_KEY_PATH"
+printf "\n"
+cat "$SSH_KEY_PATH"
+printf "\n"
+printf "  ${CLR_DIM}1. Copy the line above${CLR_RESET}\n"
+printf "  ${CLR_DIM}2. Add it at:${CLR_RESET} https://github.com/settings/ssh/new\n"
+printf "  ${CLR_DIM}3. Test with:${CLR_RESET} ssh -T git@github.com\n"
+else
+printf "  ${CLR_DIM}Expected a key at %s but it wasn't found — check the setup-ssh script log.${CLR_RESET}\n" "$SSH_KEY_PATH"
+fi
+printf "\n"
+{{- end }}

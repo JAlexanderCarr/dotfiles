@@ -9,6 +9,24 @@
         "bold": false
       },
       {
+        "id": "a70c3f05-8c89-4a9c-b88b-acb34d06d404",
+        "type": "custom-text",
+        "color": "brightBlack",
+        "customText": " ("
+      },
+      {
+        "id": "5d62a987-3941-4e20-8d3c-cd464c3bb920",
+        "type": "session-clock",
+        "color": "brightBlack",
+        "rawValue": true
+      },
+      {
+        "id": "5eb5f871-16b1-40e3-88ed-1ef7c29322de",
+        "type": "custom-text",
+        "color": "brightBlack",
+        "customText": ")"
+      },
+      {
         "id": "0720c767-86ad-4d4f-bbbe-f28f75c01830",
         "type": "separator"
       },
@@ -69,10 +87,12 @@
         "type": "separator"
       },
       {
-        "id": "5d62a987-3941-4e20-8d3c-cd464c3bb920",
-        "type": "session-clock",
-        "color": "brightBlue",
-        "rawValue": true
+        "id": "1b3e0b29-96af-4893-872e-9b68de752011",
+        "type": "reset-timer",
+        "rawValue": true,
+        "metadata": {
+          "display": "time"
+        }
       },
       {
         "id": "2d0939c9-6da4-4aa1-92e3-78b859007519",
@@ -102,7 +122,7 @@
         "id": "15a289d0-26b4-4fb6-9e5a-1b9ab56791be",
         "type": "custom-text",
         "color": "brightBlack",
-        "customText": ")"
+        "customText": ") "
       }
     ],
     [
@@ -155,8 +175,8 @@
       {
         "id": "86b37b44-c58b-444a-9ad4-fd6da1741a3f",
         "type": "custom-text",
-        "customText": " ",
-        "color": "brightBlack"
+        "color": "brightBlack",
+        "customText": " "
       }
     ],
     [

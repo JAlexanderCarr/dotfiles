@@ -44,7 +44,7 @@ install_devtools_fedora() {
 
 install_devtools_rhel() {
     with_spinner "Installing Development Tools group" sudo yum groupinstall -y -q "Development Tools"
-    with_spinner "Installing additional packages" sudo yum install -y -q --skip-broken openssl-devel make git gcc-c++ curl bash-completion pkgconfig openssh-clients fzf hub gh jq tmux
+    with_spinner "Installing additional packages" sudo yum install -y -q --skip-broken openssl-devel make git gcc-c++ curl bash-completion pkgconfig openssh-clients fzf hub gh jq tmux ripgrep
 }
 
 install_devtools_arch() {

@@ -1,6 +1,10 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+# Fail closed: without jq this hook can't inspect the command at all, so a
+# missing jq must block rather than silently letting everything through.
+command -v jq >/dev/null 2>&1 || { echo "jq required for safety hook" >&2; exit 2; }
+
 INPUT=$(cat)
 COMMAND=$(echo "$INPUT" | jq -r '.tool_input.command // empty')
 
@@ -29,6 +33,10 @@ echo "$COMMAND" | grep -qE '>\s*/etc/(passwd|shadow|sudoers|hosts)\b' \
 echo "$COMMAND" | grep -qE 'dd\s.*of=/dev/(s|h|v|xv)d[a-z]\b' \
   && block "'dd' targeting a raw disk device"
 echo "$COMMAND" | grep -qE 'dd\s.*of=/dev/disk[0-9]' \
+  && block "'dd' targeting a raw disk device"
+echo "$COMMAND" | grep -qE 'dd\s.*of=/dev/nvme[0-9]+n[0-9]+\b' \
+  && block "'dd' targeting a raw disk device"
+echo "$COMMAND" | grep -qE 'dd\s.*of=/dev/mmcblk[0-9]+\b' \
   && block "'dd' targeting a raw disk device"
 
 # Shutdown/reboot without explicit intent

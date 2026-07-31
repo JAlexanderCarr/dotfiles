@@ -11,16 +11,29 @@ if [ -d "$HOME/.local/bin" ]; then
 fi
 
 # Directory listing colors
+# GNU coreutils (Linux) palette
 export LS_COLORS="${LS_COLORS:-}:di=04;36:ex=91"
+# BSD ls (macOS) palette — CLICOLOR enables color, LSCOLORS sets it.
+# Directory: bold cyan; executable: bold red; everything else default.
+export CLICOLOR=1
+export LSCOLORS="GxxxxxxxBxxxxxxxxxxxxx"
 
-# Kubernetes tools
-if [ -d "$HOME/.kubectx" ]; then
-    export PATH="$PATH:$HOME/.kubectx"
+# Default editor for crontab, systemctl edit, kubectl edit, etc.
+if command -v nvim >/dev/null 2>&1; then
+    export EDITOR="nvim"
+    export VISUAL="nvim"
+else
+    export EDITOR="vi"
+    export VISUAL="vi"
 fi
 
-# NVM (Node Version Manager) - add default node to PATH for login shells
+# NVM (Node Version Manager) - add default node to PATH for non-interactive
+# login shells only (e.g. `bash -lc '...'`, cron). Interactive shells source
+# nvm.sh from .bashrc/.zshrc instead, which does this same PATH setup itself
+# — skipping it here for interactive shells avoids prepending the same
+# directory onto PATH twice.
 export NVM_DIR="$HOME/.nvm"
-if [ -d "$NVM_DIR" ] && [ -f "$NVM_DIR/alias/default" ]; then
+if [ -z "${PS1-}" ] && [ -d "$NVM_DIR" ] && [ -f "$NVM_DIR/alias/default" ]; then
     _nvm_ver=$(cat "$NVM_DIR/alias/default")
     # Resolve one level of alias indirection (lts/* → lts/jod → v22.x.x)
     [ -f "$NVM_DIR/alias/$_nvm_ver" ] && _nvm_ver=$(cat "$NVM_DIR/alias/$_nvm_ver")

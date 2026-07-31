@@ -58,3 +58,23 @@ vaults/
 {{ if not .packages.node }}
 .npmrc
 {{ end }}
+
+# nvim symlink onto ~/.local/bin (conditional) — binary comes from
+# .chezmoiexternal.yaml.tmpl, only relevant when neovim is enabled
+{{ if not .packages.neovim }}
+.local/bin/nvim
+{{ end }}
+
+# kubectx/kubens symlinks onto ~/.local/bin (conditional) — binaries come
+# from .chezmoiexternal.yaml.tmpl, only relevant when kubernetes is enabled
+{{ if not .packages.kubernetes }}
+.local/bin/kubectx
+.local/bin/kubens
+{{ end }}
+
+# limactl symlink onto ~/.local/bin (conditional) — only relevant on Linux,
+# where the binary comes from .chezmoiexternal.yaml.tmpl; macOS installs
+# limactl via Homebrew instead (run_onchange_install-lima.sh.tmpl)
+{{ if not (and .packages.lima (eq .chezmoi.os "linux")) }}
+.local/bin/limactl
+{{ end }}

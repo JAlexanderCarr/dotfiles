@@ -50,9 +50,6 @@ install_goenv_deps() {
     fi
 }
 
-# Enable git HTTPS override for installation
-enable_git_https_override 2>/dev/null || true
-
 install_goenv_deps
 
 # Install or update goenv (idempotent - updates in place)

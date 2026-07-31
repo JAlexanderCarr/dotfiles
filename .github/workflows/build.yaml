@@ -12,6 +12,30 @@ concurrency:
 
 jobs:
 
+  # Lint shell scripts and rendered chezmoi templates
+  shellcheck:
+    runs-on: ubuntu-latest
+    name: Shellcheck
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v7
+    - name: Install chezmoi
+      run: sh -c "$(curl -fsLS get.chezmoi.io)" -- -b "$HOME/.local/bin"
+    - name: Run shellcheck
+      run: |
+        export PATH="$HOME/.local/bin:$PATH"
+        make shellcheck
+
+  # Test the Claude Code safety hooks directly (no container needed)
+  test-hooks:
+    runs-on: ubuntu-latest
+    name: Test Claude Hooks
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v7
+    - name: Run hooks test
+      run: make test-hooks
+
   # Detect if Dockerfile.dev changed
   check-dev:
     runs-on: ubuntu-latest
@@ -49,8 +73,14 @@ jobs:
       run: |
         docker buildx build --platform linux/amd64,linux/arm64 \
           -f ./build/Dockerfile.ubuntu \
-          -t ghcr.io/${{ github.repository }}/ubuntu-dotfiles:latest \
+          -t ghcr.io/${{ github.repository }}/ubuntu-dotfiles:ci-${{ github.run_id }} \
           --push .
+    - name: Promote to latest (push to main only)
+      if: github.event_name == 'push'
+      run: |
+        docker buildx imagetools create \
+          -t ghcr.io/${{ github.repository }}/ubuntu-dotfiles:latest \
+          ghcr.io/${{ github.repository }}/ubuntu-dotfiles:ci-${{ github.run_id }}
 
   # Build Amazon Container
   build-amazon:
@@ -73,8 +103,14 @@ jobs:
       run: |
         docker buildx build --platform linux/amd64,linux/arm64 \
           -f ./build/Dockerfile.amazon \
-          -t ghcr.io/${{ github.repository }}/amazon-dotfiles:latest \
+          -t ghcr.io/${{ github.repository }}/amazon-dotfiles:ci-${{ github.run_id }} \
           --push .
+    - name: Promote to latest (push to main only)
+      if: github.event_name == 'push'
+      run: |
+        docker buildx imagetools create \
+          -t ghcr.io/${{ github.repository }}/amazon-dotfiles:latest \
+          ghcr.io/${{ github.repository }}/amazon-dotfiles:ci-${{ github.run_id }}
 
   # Build Dev Container
   build-dev:
@@ -124,8 +160,8 @@ jobs:
         password: ${{ secrets.GHCR_TOKEN }}
     - name: Load Ubuntu image
       run: |
-        docker pull ghcr.io/${{ github.repository }}/ubuntu-dotfiles:latest
-        docker tag ghcr.io/${{ github.repository }}/ubuntu-dotfiles:latest ubuntu-dotfiles:latest
+        docker pull ghcr.io/${{ github.repository }}/ubuntu-dotfiles:ci-${{ github.run_id }}
+        docker tag ghcr.io/${{ github.repository }}/ubuntu-dotfiles:ci-${{ github.run_id }} ubuntu-dotfiles:latest
     - name: Run chezmoi installation test
       run: make test-ubuntu
 
@@ -147,8 +183,8 @@ jobs:
         password: ${{ secrets.GHCR_TOKEN }}
     - name: Load Amazon image
       run: |
-        docker pull ghcr.io/${{ github.repository }}/amazon-dotfiles:latest
-        docker tag ghcr.io/${{ github.repository }}/amazon-dotfiles:latest amazon-dotfiles:latest
+        docker pull ghcr.io/${{ github.repository }}/amazon-dotfiles:ci-${{ github.run_id }}
+        docker tag ghcr.io/${{ github.repository }}/amazon-dotfiles:ci-${{ github.run_id }} amazon-dotfiles:latest
     - name: Run chezmoi installation test
       run: make test-amazon
 
@@ -177,12 +213,22 @@ jobs:
   # Test Summary
   test-summary:
     runs-on: ubuntu-latest
-    needs: [test-ubuntu, test-amazon, test-dev]
+    needs: [shellcheck, test-hooks, test-ubuntu, test-amazon, test-dev]
     if: always()
     steps:
     - name: Print and Summarize Test Results
       run: |
         # Determine status icons
+        if [ "${{ needs.shellcheck.result }}" = "success" ]; then
+          SHELLCHECK_ICON="✅"
+        else
+          SHELLCHECK_ICON="❌"
+        fi
+        if [ "${{ needs.test-hooks.result }}" = "success" ]; then
+          HOOKS_ICON="✅"
+        else
+          HOOKS_ICON="❌"
+        fi
         if [ "${{ needs.test-ubuntu.result }}" = "success" ]; then
           UBUNTU_ICON="✅"
         else
@@ -206,6 +252,8 @@ jobs:
         echo "        TEST RESULTS"
         echo "================================"
         echo ""
+        echo "Shellcheck: $SHELLCHECK_ICON ${{ needs.shellcheck.result }}"
+        echo "Hooks:   $HOOKS_ICON ${{ needs.test-hooks.result }}"
         echo "Ubuntu:  $UBUNTU_ICON ${{ needs.test-ubuntu.result }}"
         echo "Amazon:  $AMAZON_ICON ${{ needs.test-amazon.result }}"
         echo "Dev:     $DEV_ICON ${{ needs.test-dev.result }}"
@@ -217,12 +265,14 @@ jobs:
         echo "" >> $GITHUB_STEP_SUMMARY
         echo "| Container | Status | Result |" >> $GITHUB_STEP_SUMMARY
         echo "|-----------|--------|--------|" >> $GITHUB_STEP_SUMMARY
+        echo "| Shellcheck | $SHELLCHECK_ICON | ${{ needs.shellcheck.result }} |" >> $GITHUB_STEP_SUMMARY
+        echo "| Hooks | $HOOKS_ICON | ${{ needs.test-hooks.result }} |" >> $GITHUB_STEP_SUMMARY
         echo "| Ubuntu | $UBUNTU_ICON | ${{ needs.test-ubuntu.result }} |" >> $GITHUB_STEP_SUMMARY
         echo "| Amazon | $AMAZON_ICON | ${{ needs.test-amazon.result }} |" >> $GITHUB_STEP_SUMMARY
         echo "| Dev | $DEV_ICON | ${{ needs.test-dev.result }} |" >> $GITHUB_STEP_SUMMARY
 
     - name: Check for failures
-      if: needs.test-ubuntu.result != 'success' || needs.test-amazon.result != 'success' || (needs.test-dev.result != 'success' && needs.test-dev.result != 'skipped')
+      if: needs.shellcheck.result != 'success' || needs.test-hooks.result != 'success' || needs.test-ubuntu.result != 'success' || needs.test-amazon.result != 'success' || (needs.test-dev.result != 'success' && needs.test-dev.result != 'skipped')
       run: |
         echo "One or more tests failed!"
         exit 1

@@ -1,0 +1,19 @@
+# ~/.inputrc - readline configuration for bash (and anything else using readline)
+
+# Pull in the system defaults first — once ~/.inputrc exists, readline stops
+# reading /etc/inputrc on its own.
+$include /etc/inputrc
+
+# Case-insensitive tab completion
+set completion-ignore-case on
+
+# Treat hyphens and underscores as equivalent when completing
+set completion-map-case on
+
+# Show all completions immediately on an ambiguous match, instead of
+# ringing the bell and requiring a second Tab
+set show-all-if-ambiguous on
+
+# Up/Down search history using whatever's already been typed on the line
+"\e[A": history-search-backward
+"\e[B": history-search-forward

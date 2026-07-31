@@ -10,12 +10,18 @@
 [pull]
 	rebase = true
 [branch]
-    autosetuprebase = always
+	autosetuprebase = always
 [commit]
 	gpgsign = true
 [gpg]
 	format = ssh
 [core]
 	editor = nvim
-[url "ssh://git@github.com/"]
-	insteadOf = https://github.com/
+[fetch]
+	prune = true
+[rerere]
+	enabled = true
+[diff]
+	algorithm = histogram
+[merge]
+	conflictstyle = zdiff3

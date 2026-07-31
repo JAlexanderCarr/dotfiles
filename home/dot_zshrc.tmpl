@@ -8,10 +8,11 @@ setopt HIST_IGNORE_ALL_DUPS
 setopt HIST_IGNORE_SPACE
 setopt APPEND_HISTORY
 setopt INC_APPEND_HISTORY
+setopt SHARE_HISTORY
 
 HISTFILE="$HOME/.zsh_history"
-HISTSIZE=1000
-SAVEHIST=2000
+HISTSIZE=50000
+SAVEHIST=50000
 
 # --- Lesspipe ---
 [[ -x /usr/bin/lesspipe ]] && eval "$(SHELL=/bin/sh lesspipe)"
@@ -128,9 +129,48 @@ fi
 
 # --- Completions ---
 
+# compinit's function-security audit is the slow part; skip it (-C) on runs
+# where the cached dump is less than a day old, and only pay for a full scan
+# once daily so newly-installed completions still get picked up.
 autoload -Uz compinit
-compinit
+_zcompdump="$HOME/.zcompdump"
+if [[ -n "$_zcompdump"(#qN.mh+24) ]]; then
+    compinit
+else
+    compinit -C
+fi
+unset _zcompdump
 
 if [[ -f ~/.zsh_completion ]]; then
     source ~/.zsh_completion
 fi
+
+# --- Plugins ---
+
+# zsh-autosuggestions (apt/dnf, Arch, Homebrew paths)
+for _plugin_path in \
+    /usr/share/zsh-autosuggestions/zsh-autosuggestions.zsh \
+    /usr/share/zsh/plugins/zsh-autosuggestions/zsh-autosuggestions.zsh \
+    /opt/homebrew/share/zsh-autosuggestions/zsh-autosuggestions.zsh \
+    /usr/local/share/zsh-autosuggestions/zsh-autosuggestions.zsh
+do
+    if [[ -f "$_plugin_path" ]]; then
+        source "$_plugin_path"
+        break
+    fi
+done
+
+# zsh-syntax-highlighting must be sourced last — it wraps widgets defined by
+# everything above it (including zsh-autosuggestions).
+for _plugin_path in \
+    /usr/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh \
+    /usr/share/zsh/plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh \
+    /opt/homebrew/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh \
+    /usr/local/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
+do
+    if [[ -f "$_plugin_path" ]]; then
+        source "$_plugin_path"
+        break
+    fi
+done
+unset _plugin_path

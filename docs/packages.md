@@ -16,7 +16,7 @@ Core development tools and build utilities.
 
 ## neovim
 
-- Neovim (pre-built binary)
+- Neovim (pre-built binary via `.chezmoiexternal.yaml.tmpl`, symlinked onto `~/.local/bin`, no sudo)
 - vim-plug plugin manager
 - Plugins auto-installed on first launch: LSP, completion, gitsigns, lualine, nvim-tree, which-key
 
@@ -36,10 +36,9 @@ Core development tools and build utilities.
 
 ## kubernetes
 
-| Platform | Method |
-|----------|--------|
-| macOS | kind, kubectl, kubectx/kubens via Homebrew |
-| Linux | kind, kubectl, kubectx, kubens via direct binary downloads |
+kind, kubectl, kubectx, and kubens are all installed via `.chezmoiexternal.yaml.tmpl` —
+pinned binaries downloaded straight into `~/.local/bin` (kubectx/kubens are symlinked from
+`~/.local/kubectx`), no sudo, on every platform.
 
 ## node
 

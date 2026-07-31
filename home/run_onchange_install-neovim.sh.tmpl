@@ -1,7 +1,9 @@
 #!/bin/bash
 # chezmoi:template:left-delimiter="{{" right-delimiter="}}"
-# Install Neovim - optional, controlled by chezmoi config
-# Downloads pre-built binaries from GitHub releases
+# Install Neovim plugins - optional, controlled by chezmoi config
+# The nvim binary itself comes from .chezmoiexternal.yaml.tmpl (symlinked
+# onto ~/.local/bin via dot_local/bin/symlink_nvim); this script only
+# handles the vim-plug bootstrap.
 
 # Source the logging helper (installed by chezmoi before scripts run)
 source "${HOME}/.local/bin/chezmoi-log-helper.sh" 2>/dev/null || {
@@ -20,84 +22,15 @@ exit 0
 
 set -euo pipefail
 
-OS="$(uname -s | tr '[:upper:]' '[:lower:]')"
-ARCH="$(uname -m)"
-
-# Requires Neovim 0.11+ for nvim-lspconfig and other modern plugins
-NVIM_VERSION="0.12.4"
-
-# Install paths
-NVIM_INSTALL_DIR="${HOME}/.local/nvim"
-NVIM_BIN="/usr/local/bin/nvim"
-
-install_neovim() {
-    local nvim_arch
-    case "$ARCH" in
-        x86_64|amd64) nvim_arch="x86_64" ;;
-        aarch64|arm64) nvim_arch="arm64" ;;
-        *) print_fail "Unsupported architecture for Neovim: $ARCH"; return 1 ;;
-    esac
-
-    local tarball url
-
-    if [[ "$OS" == "darwin" ]]; then
-        tarball="nvim-macos-${nvim_arch}.tar.gz"
-    else
-        tarball="nvim-linux-${nvim_arch}.tar.gz"
-    fi
-
-    url="https://github.com/neovim/neovim/releases/download/v${NVIM_VERSION}/${tarball}"
-
-    with_spinner "Downloading build dependencies" curl -fsSL -o "/tmp/${tarball}" "$url"
-
-    # Remove old install and stale symlink before extracting
-    rm -rf "$NVIM_INSTALL_DIR"
-    mkdir -p "$NVIM_INSTALL_DIR"
-    tar xzf "/tmp/${tarball}" -C "$NVIM_INSTALL_DIR" --strip-components=1
-    rm -f "/tmp/${tarball}"
-
-    # Symlink into /usr/local/bin so nvim is on the default PATH
-    sudo ln -sf "${NVIM_INSTALL_DIR}/bin/nvim" "$NVIM_BIN"
-}
-
-log_section "Neovim Installation"
-print_header "Neovim ${NVIM_VERSION}"
-
-# Ensure git uses HTTPS for GitHub during plugin installs
-enable_git_https_override 2>/dev/null || true
-
-install_neovim
-
-# Install nvim plugins if available
 log_section "Neovim Plugins Installation"
+print_header "Neovim Plugins"
 
-if [[ -x "$NVIM_BIN" ]] && [[ -f "$HOME/.local/share/nvim/site/autoload/plug.vim" ]]; then
-    # Override git to use HTTPS for GitHub during plugin installs.
-    # The shell function from enable_git_https_override does not carry into
-    # nvim's job system, so we export env vars that git itself honours.
-    export GIT_CONFIG_NOSYSTEM=1
-    export GIT_CONFIG_GLOBAL=/dev/null
-    export GIT_CONFIG_COUNT=4
-    export GIT_CONFIG_KEY_0="url.https://github.com/.insteadOf"
-    export GIT_CONFIG_VALUE_0="ssh://github.com/"
-    export GIT_CONFIG_KEY_1="url.https://github.com/.insteadOf"
-    export GIT_CONFIG_VALUE_1="ssh://git@github.com/"
-    export GIT_CONFIG_KEY_2="url.https://github.com/.insteadOf"
-    export GIT_CONFIG_VALUE_2="git@github.com:"
-    export GIT_CONFIG_KEY_3="url.https://github.com/.insteadOf"
-    export GIT_CONFIG_VALUE_3="git://github.com/"
-
+if command -v nvim >/dev/null 2>&1 && [[ -f "$HOME/.local/share/nvim/site/autoload/plug.vim" ]]; then
     # --sync makes PlugInstall block until all clones finish (default is async)
-    with_spinner "Installing plugins" "$NVIM_BIN" --headless +"PlugInstall --sync" +qall
-
-    unset GIT_CONFIG_NOSYSTEM GIT_CONFIG_GLOBAL GIT_CONFIG_COUNT
-    unset GIT_CONFIG_KEY_0 GIT_CONFIG_VALUE_0
-    unset GIT_CONFIG_KEY_1 GIT_CONFIG_VALUE_1
-    unset GIT_CONFIG_KEY_2 GIT_CONFIG_VALUE_2
-    unset GIT_CONFIG_KEY_3 GIT_CONFIG_VALUE_3
+    with_spinner "Installing plugins" nvim --headless +"PlugInstall --sync" +qall
 else
     print_fail "Cannot install plugins (nvim or vim-plug not found)"
     exit 1
 fi
 
-print_done "Neovim ${NVIM_VERSION} installed"
+print_done "Neovim plugins installed"

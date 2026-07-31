@@ -57,9 +57,6 @@ install_pyenv_deps() {
     fi
 }
 
-# Enable git HTTPS override for installation
-enable_git_https_override 2>/dev/null || true
-
 install_pyenv_deps
 
 # Install or update pyenv (idempotent - updates in place)

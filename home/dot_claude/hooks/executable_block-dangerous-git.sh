@@ -1,13 +1,18 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+# Fail closed: without jq this hook can't inspect the command at all, so a
+# missing jq must block rather than silently letting everything through.
+command -v jq >/dev/null 2>&1 || { echo "jq required for safety hook" >&2; exit 2; }
+
 INPUT=$(cat)
 COMMAND=$(echo "$INPUT" | jq -r '.tool_input.command // empty')
 
 [[ -z "$COMMAND" ]] && exit 0
 
-# Only inspect git/gh commands
-echo "$COMMAND" | grep -qE '^\s*(git|gh)\b' || exit 0
+# Inspect git/gh anywhere in the command, not just at the start — otherwise
+# compound commands like `cd repo && git push -f` skip inspection entirely.
+echo "$COMMAND" | grep -qE '(^|[;&|]|&&|\|\|)\s*(git|gh)\b' || exit 0
 
 block() {
   echo "Blocked: $1. This action is not permitted and cannot be overridden." >&2
@@ -17,7 +22,7 @@ block() {
 # ── git: denylist ─────────────────────────────────────────────────────────────
 # The set of dangerous git operations is small and stable — denylist is appropriate.
 
-if echo "$COMMAND" | grep -qE '^\s*git\b'; then
+if echo "$COMMAND" | grep -qE '(^|[;&|]|&&|\|\|)\s*git\b'; then
   # Force push (any form)
   echo "$COMMAND" | grep -qE 'git push.+(-f\b|--force\b|--force-with-lease\b)' \
     && block "force push is not permitted and cannot be overridden"
@@ -57,7 +62,7 @@ fi
 # gh has too many subcommands to enumerate dangerous ones — allowlist known-safe
 # operations and block everything else by default.
 
-if echo "$COMMAND" | grep -qE '^\s*gh\b'; then
+if echo "$COMMAND" | grep -qE '(^|[;&|]|&&|\|\|)\s*gh\b'; then
   # Auth: status only (login/logout/refresh/switch require human presence)
   echo "$COMMAND" | grep -qE '\bgh auth status\b' && exit 0
 
