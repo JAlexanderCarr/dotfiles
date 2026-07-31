@@ -92,7 +92,7 @@ YAML
 
 for f in home/run_once_*.tmpl home/run_onchange_*.tmpl; do
     [[ -f "$f" ]] || continue
-    if ! chezmoi --config "$CONFIG" execute-template < "$f" | shellcheck -s bash --severity="$SEVERITY" -; then
+    if ! chezmoi --config "$CONFIG" --source "$DOTFILES_DIR/home" execute-template < "$f" | shellcheck -s bash --severity="$SEVERITY" -; then
         echo "[shellcheck] issues found in rendered $f" >&2
         FAILED=1
     fi
