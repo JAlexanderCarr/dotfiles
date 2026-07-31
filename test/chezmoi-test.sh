@@ -251,6 +251,7 @@ check_file "$HOME/.config/nvim/init.vim" "nvim init.vim"
 check_dir "$HOME/.config/nvim" "nvim config directory"
 check_dir "$HOME/.local/share/nvim/site/autoload" "nvim autoload directory"
 check_file "$HOME/.local/share/nvim/site/autoload/plug.vim" "vim-plug plugin manager"
+check_file "$HOME/.local/bin/nvim" "nvim symlink at ~/.local/bin"
 
 # Shell aliases and completions
 check_file "$HOME/.aliases" "aliases"
@@ -338,26 +339,32 @@ if [[ "$SKIP_PACKAGES" == "false" ]]; then
         check_fail "Python is not installed"
     fi
 
-    # Kubernetes tools
-    if command -v kubectl &>/dev/null || [[ -f "/usr/local/bin/kubectl" ]]; then
+    # Kubernetes tools — installed via .chezmoiexternal.yaml.tmpl into
+    # ~/.local, no sudo, no /usr/local/bin collisions
+    check_file "$HOME/.local/bin/kubectl" "kubectl binary at ~/.local/bin"
+    if command -v kubectl &>/dev/null; then
         check_pass "kubectl is installed"
     else
         check_fail "kubectl is not installed"
     fi
 
-    if command -v kind &>/dev/null || [[ -f "/usr/local/bin/kind" ]]; then
+    check_file "$HOME/.local/bin/kind" "kind binary at ~/.local/bin"
+    if command -v kind &>/dev/null; then
         check_pass "kind is installed"
     else
         check_fail "kind is not installed"
     fi
 
-    if [[ -f "/usr/local/bin/kubectx" ]] || command -v kubectx &>/dev/null; then
+    check_file "$HOME/.local/bin/kubectx" "kubectx symlink at ~/.local/bin"
+    check_file "$HOME/.local/kubectx/completion/kubectx.bash" "kubectx bash completion"
+    if command -v kubectx &>/dev/null; then
         check_pass "kubectx is installed"
     else
         check_fail "kubectx is not installed"
     fi
 
-    # Lima - validate rendered config files with limactl
+    # Lima - installed via .chezmoiexternal.yaml.tmpl into ~/.local (Linux)
+    check_file "$HOME/.local/bin/limactl" "limactl binary at ~/.local/bin"
     check_file "$HOME/.config/lima/dev-arm64.yaml" "Lima ARM64 VM template"
     check_file "$HOME/.config/lima/dev-x86_64.yaml" "Lima x86_64 VM template"
     for lima_config in "$HOME/.config/lima/dev-arm64.yaml" "$HOME/.config/lima/dev-x86_64.yaml"; do

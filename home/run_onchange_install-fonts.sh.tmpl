@@ -1,6 +1,12 @@
 #!/bin/bash
 # chezmoi:template:left-delimiter="{{" right-delimiter="}}"
-# Install fonts - runs once per machine
+# Install fonts - optional, controlled by chezmoi config
+# Re-runs automatically when a font is added, removed, or replaced.
+{{- $fontsHash := "" }}
+{{- range (glob (joinPath .chezmoi.sourceDir "fonts/*")) }}
+{{-   $fontsHash = printf "%s%s" $fontsHash (include .) }}
+{{- end }}
+# {{ $fontsHash | sha256sum }}
 
 # Source the logging helper (installed by chezmoi before scripts run)
 source "${HOME}/.local/bin/chezmoi-log-helper.sh" 2>/dev/null || {

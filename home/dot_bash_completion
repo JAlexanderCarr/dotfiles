@@ -43,8 +43,8 @@ if command -v kubectl >/dev/null 2>&1; then
 fi
 
 if command -v kubens >/dev/null 2>&1; then
-    if [ -f /opt/kubectx/completion/kubens.bash ]; then
-        . /opt/kubectx/completion/kubens.bash
+    if [ -f "$HOME/.local/kubectx/completion/kubens.bash" ]; then
+        . "$HOME/.local/kubectx/completion/kubens.bash"
     elif [ -f /usr/share/bash-completion/completions/kubens ]; then
         . /usr/share/bash-completion/completions/kubens
     fi
@@ -53,8 +53,8 @@ if command -v kubens >/dev/null 2>&1; then
 fi
 
 if command -v kubectx >/dev/null 2>&1; then
-    if [ -f /opt/kubectx/completion/kubectx.bash ]; then
-        . /opt/kubectx/completion/kubectx.bash
+    if [ -f "$HOME/.local/kubectx/completion/kubectx.bash" ]; then
+        . "$HOME/.local/kubectx/completion/kubectx.bash"
     elif [ -f /usr/share/bash-completion/completions/kubectx ]; then
         . /usr/share/bash-completion/completions/kubectx
     fi

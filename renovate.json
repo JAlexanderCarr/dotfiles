@@ -62,10 +62,10 @@
     {
       "customType": "regex",
       "managerFilePatterns": [
-        "/home/run_onchange_install-kubernetes\\.sh\\.tmpl$/"
+        "/home/\\.chezmoiexternal\\.yaml\\.tmpl$/"
       ],
       "matchStrings": [
-        "KIND_VERSION=\"(?<currentValue>[^\"]+)\""
+        "\\$kindVersion := \"(?<currentValue>[^\"]+)\""
       ],
       "depNameTemplate": "kind",
       "datasourceTemplate": "github-releases",
@@ -75,10 +75,10 @@
     {
       "customType": "regex",
       "managerFilePatterns": [
-        "/home/run_onchange_install-kubernetes\\.sh\\.tmpl$/"
+        "/home/\\.chezmoiexternal\\.yaml\\.tmpl$/"
       ],
       "matchStrings": [
-        "KUBECTL_VERSION=\"(?<currentValue>[^\"]+)\""
+        "\\$kubectlVersion := \"(?<currentValue>[^\"]+)\""
       ],
       "depNameTemplate": "kubectl",
       "datasourceTemplate": "github-releases",
@@ -88,10 +88,10 @@
     {
       "customType": "regex",
       "managerFilePatterns": [
-        "/home/run_onchange_install-kubernetes\\.sh\\.tmpl$/"
+        "/home/\\.chezmoiexternal\\.yaml\\.tmpl$/"
       ],
       "matchStrings": [
-        "KUBECTX_VERSION=\"(?<currentValue>[^\"]+)\""
+        "\\$kubectxVersion := \"(?<currentValue>[^\"]+)\""
       ],
       "depNameTemplate": "kubectx",
       "datasourceTemplate": "github-releases",
@@ -101,10 +101,10 @@
     {
       "customType": "regex",
       "managerFilePatterns": [
-        "/home/run_onchange_install-lima\\.sh\\.tmpl$/"
+        "/home/\\.chezmoiexternal\\.yaml\\.tmpl$/"
       ],
       "matchStrings": [
-        "LIMA_VERSION=\"(?<currentValue>[^\"]+)\""
+        "\\$limaVersion := \"(?<currentValue>[^\"]+)\""
       ],
       "depNameTemplate": "lima",
       "datasourceTemplate": "github-releases",
@@ -124,10 +124,10 @@
     {
       "customType": "regex",
       "managerFilePatterns": [
-        "/home/run_onchange_install-neovim\\.sh\\.tmpl$/"
+        "/home/\\.chezmoiexternal\\.yaml\\.tmpl$/"
       ],
       "matchStrings": [
-        "NVIM_VERSION=\"(?<currentValue>[^\"]+)\""
+        "\\$nvimVersion := \"(?<currentValue>[^\"]+)\""
       ],
       "depNameTemplate": "neovim",
       "datasourceTemplate": "github-releases",

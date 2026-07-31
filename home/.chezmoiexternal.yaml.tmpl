@@ -1,0 +1,101 @@
+# chezmoi:template:left-delimiter="{{" right-delimiter="}}"
+# Direct-binary tool installs (kubectl, kind, kubectx/kubens, nvim, and
+# limactl on Linux), managed through chezmoi's native external mechanism
+# instead of curl+sudo install scripts.
+#
+# Why: the old scripts ran `sudo rm` on the existing binary before `curl`,
+# so a failed download under `set -euo pipefail` left the machine with no
+# tool at all. chezmoi downloads to a temporary location first and only
+# swaps it into place on success, so a failed fetch never removes a working
+# binary. Installing into ~/.local (already first on PATH, see dot_profile)
+# also drops the sudo requirement and the /usr/local/bin collisions with
+# Homebrew and Docker Desktop's own kubectl symlink.
+#
+# Versions are pinned below as template vars; each is the single anchor the
+# corresponding Renovate custom regex manager (renovate.json) tracks.
+#
+# Checksums are intentionally omitted. These URLs are versioned per os/arch,
+# and Renovate's custom regex managers only bump currentValue — they don't
+# refresh a checksum alongside it, so a pinned checksum would go stale on
+# every version bump and hard-fail every apply until manually re-pinned.
+# HTTPS + a pinned version tag is the baseline; revisit if per-asset
+# checksums become worth the upkeep.
+
+{{ $kubectlVersion := "1.36.2" -}}
+{{- $kindVersion := "0.32.0" -}}
+{{- $kubectxVersion := "0.11.0" -}}
+{{- $nvimVersion := "0.12.4" -}}
+{{- $limaVersion := "1.0.3" -}}
+
+{{- /* nvim and lima release assets use different arch/os names than
+       chezmoi's own .chezmoi.arch/.chezmoi.os normalize to. */ -}}
+{{- $nvimArch := "x86_64" -}}
+{{- $limaArch := "x86_64" -}}
+{{- if eq .chezmoi.arch "arm64" -}}
+{{-   $nvimArch = "arm64" -}}
+{{-   $limaArch = "aarch64" -}}
+{{- end -}}
+
+{{- $nvimOS := "linux" -}}
+{{- if eq .chezmoi.os "darwin" -}}
+{{-   $nvimOS = "macos" -}}
+{{- end -}}
+
+{{ if .packages.kubernetes -}}
+".local/bin/kubectl":
+  type: file
+  url: "https://dl.k8s.io/release/v{{ $kubectlVersion }}/bin/{{ .chezmoi.os }}/{{ .chezmoi.arch }}/kubectl"
+  executable: true
+  refreshPeriod: "168h"
+
+".local/bin/kind":
+  type: file
+  url: "https://kind.sigs.k8s.io/dl/v{{ $kindVersion }}/kind-{{ .chezmoi.os }}-{{ .chezmoi.arch }}"
+  executable: true
+  refreshPeriod: "168h"
+
+# Source tarball (not the release-asset Go binaries) so completion/ comes
+# along with kubectx/kubens — see home/dot_bash_completion and
+# home/dot_zsh_completion, which source completion/kubectx.{bash,zsh} etc.
+# from this path.
+".local/kubectx":
+  type: archive
+  url: "https://github.com/ahmetb/kubectx/archive/refs/tags/v{{ $kubectxVersion }}.tar.gz"
+  stripComponents: 1
+  refreshPeriod: "168h"
+{{ end -}}
+
+{{ if .packages.neovim -}}
+".local/nvim":
+  type: archive
+  url: "https://github.com/neovim/neovim/releases/download/v{{ $nvimVersion }}/nvim-{{ $nvimOS }}-{{ $nvimArch }}.tar.gz"
+  stripComponents: 1
+  refreshPeriod: "168h"
+{{ end -}}
+
+{{ if and .packages.lima (eq .chezmoi.os "linux") -}}
+# macOS uses Homebrew instead (run_onchange_install-lima.sh.tmpl); Homebrew
+# already keeps that path off /usr/local/bin collisions and up to date.
+#
+# Target is ".local/lima", not ".local" itself: chezmoi won't let an
+# archive external claim a directory that's also populated by regular
+# managed content (dot_local/ already owns .local/bin/*, .local/share/nvim/
+# ...), so limactl gets its own namespaced dir and a symlink onto PATH,
+# same as nvim (dot_local/bin/symlink_limactl).
+#
+# include is required, not cosmetic: without it, chezmoi reports this
+# entry's own target path as being defined twice ("inconsistent state"),
+# apparently tripping over the archive's bare top-level directory entries.
+# Restricting extraction to bin/ and share/ (everything limactl needs)
+# avoids those entries entirely. The archive's members are named "./bin/..."
+# and "./share/...", not "bin/..." — the leading "./" must be in the
+# pattern or it silently matches nothing (verified against the real
+# tarball; a bare "bin/**" produces an empty target directory, no error).
+".local/lima":
+  type: archive
+  url: "https://github.com/lima-vm/lima/releases/download/v{{ $limaVersion }}/lima-{{ $limaVersion }}-Linux-{{ $limaArch }}.tar.gz"
+  include:
+    - "./bin/**"
+    - "./share/**"
+  refreshPeriod: "168h"
+{{ end -}}

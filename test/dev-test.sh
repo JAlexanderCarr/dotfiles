@@ -63,13 +63,14 @@ check_dir ~/.pyenv  "pyenv (~/.pyenv)"
 
 echo ""
 echo "--- Kubernetes ---"
-check_bin /usr/local/bin/kubectl  "kubectl"
-check_bin /usr/local/bin/kubectx  "kubectx"
+check_bin ~/.local/bin/kubectl  "kubectl"
+check_bin ~/.local/bin/kubectx  "kubectx"
 
 echo ""
 echo "--- Neovim ---"
 check_dir ~/.config/nvim          "nvim config dir"
 check_file ~/.config/nvim/init.vim "nvim init.vim"
+check_bin ~/.local/bin/nvim       "nvim binary"
 
 echo ""
 echo "--- AI config ---"

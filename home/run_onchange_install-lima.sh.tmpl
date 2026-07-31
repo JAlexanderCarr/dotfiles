@@ -1,8 +1,8 @@
 #!/bin/bash
 # chezmoi:template:left-delimiter="{{" right-delimiter="}}"
 # Install Lima - optional, controlled by chezmoi config
-# macOS: installed via Homebrew
-# Linux: installed from GitHub releases tarball
+# macOS: installed via Homebrew (this script)
+# Linux: installed from GitHub releases tarball via .chezmoiexternal.yaml.tmpl
 
 # Source the logging helper (installed by chezmoi before scripts run)
 source "${HOME}/.local/bin/chezmoi-log-helper.sh" 2>/dev/null || {
@@ -15,27 +15,11 @@ source "${HOME}/.local/bin/chezmoi-log-helper.sh" 2>/dev/null || {
     log_silent() { :; }; log_section() { :; }
 }
 
-{{- if not .packages.lima }}
+{{- if or (not .packages.lima) (ne .chezmoi.os "darwin") }}
 exit 0
 {{- end }}
 
 set -euo pipefail
-
-OS="$(uname -s | tr '[:upper:]' '[:lower:]')"
-ARCH="$(uname -m)"
-
-LIMA_VERSION="1.0.3"
-
-# Normalize architecture
-ARCH_STD="$ARCH"
-if [[ "$ARCH_STD" == "x86_64" || "$ARCH_STD" == "amd64" ]]; then
-    ARCH_STD="x86_64"
-elif [[ "$ARCH_STD" == "arm64" || "$ARCH_STD" == "aarch64" ]]; then
-    ARCH_STD="aarch64"
-else
-    print_fail "Unsupported architecture: $ARCH_STD"
-    exit 1
-fi
 
 log_section "Lima Installation"
 print_header "Lima"
@@ -43,10 +27,10 @@ print_header "Lima"
 install_lima_macos() {
     if command -v limactl > /dev/null 2>&1; then
         log_silent "Upgrading lima via Homebrew"
-        with_spinner "Upgrading Lima ${LIMA_VERSION}" brew upgrade lima
+        with_spinner "Upgrading Lima" brew upgrade lima
     else
         log_silent "Installing lima via Homebrew"
-        with_spinner "Installing Lima ${LIMA_VERSION}" brew install lima
+        with_spinner "Installing Lima" brew install lima
     fi
 
     # Additional guest agents for non-default Linux distributions
@@ -68,26 +52,6 @@ install_lima_macos() {
     fi
 }
 
-install_lima_linux() {
-    local tarball="lima-${LIMA_VERSION}-Linux-${ARCH_STD}.tar.gz"
-    local url="https://github.com/lima-vm/lima/releases/download/v${LIMA_VERSION}/${tarball}"
-
-    # Clean up old installation if present
-    log_silent "Removing old lima installation if present"
-    sudo rm -f /usr/local/bin/limactl >> "$CHEZMOI_LOG_FILE" 2>&1 || true
-    sudo rm -rf /usr/local/share/lima >> "$CHEZMOI_LOG_FILE" 2>&1 || true
-
-    log_silent "Downloading Lima ${LIMA_VERSION}"
-    curl -fsSL -o "/tmp/${tarball}" "$url" >> "$CHEZMOI_LOG_FILE" 2>&1
-
-    with_spinner "Installing Lima ${LIMA_VERSION}" sudo tar xzf "/tmp/${tarball}" -C /usr/local
-    rm -f "/tmp/${tarball}" >> "$CHEZMOI_LOG_FILE" 2>&1
-}
-
-if [[ "$OS" == "darwin" ]]; then
-    install_lima_macos
-else
-    install_lima_linux
-fi
+install_lima_macos
 
 print_done "Lima installed"

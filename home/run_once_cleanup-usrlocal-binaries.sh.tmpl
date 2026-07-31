@@ -1,0 +1,19 @@
+#!/bin/bash
+# chezmoi:template:left-delimiter="{{" right-delimiter="}}"
+# One-time cleanup of direct-binary installs from before kubectl, kind,
+# kubectx/kubens, nvim, and Lima (Linux) moved to .chezmoiexternal.yaml.tmpl.
+# Those binaries now live under ~/.local (no sudo, no /usr/local collisions
+# with Homebrew or Docker Desktop) — this just removes the old copies so
+# they don't shadow the new ones on PATH.
+#
+# run_once, so this only fires once per machine; every removal is
+# best-effort (missing file/no sudo access is a no-op, not a failure).
+
+set -euo pipefail
+
+if command -v sudo >/dev/null 2>&1; then
+    sudo rm -f /usr/local/bin/kubectl /usr/local/bin/kind \
+               /usr/local/bin/kubectx /usr/local/bin/kubens \
+               /usr/local/bin/nvim /usr/local/bin/limactl 2>/dev/null || true
+    sudo rm -rf /opt/kubectx /usr/local/share/lima 2>/dev/null || true
+fi

@@ -33,8 +33,11 @@ if command -v kubectl &>/dev/null; then
 fi
 
 if command -v kubens &>/dev/null; then
-    if [[ -f /opt/kubectx/completion/kubens.zsh ]]; then
-        source /opt/kubectx/completion/kubens.zsh
+    # Note the leading underscore: kubectx's release tarball names its zsh
+    # completion functions _kubens.zsh / _kubectx.zsh (standard zsh function
+    # naming), unlike the unprefixed kubens.bash / kubectx.bash for bash.
+    if [[ -f "$HOME/.local/kubectx/completion/_kubens.zsh" ]]; then
+        source "$HOME/.local/kubectx/completion/_kubens.zsh"
     elif [[ -f /usr/share/zsh/vendor-completions/_kubens ]]; then
         source /usr/share/zsh/vendor-completions/_kubens
     fi
@@ -43,8 +46,8 @@ if command -v kubens &>/dev/null; then
 fi
 
 if command -v kubectx &>/dev/null; then
-    if [[ -f /opt/kubectx/completion/kubectx.zsh ]]; then
-        source /opt/kubectx/completion/kubectx.zsh
+    if [[ -f "$HOME/.local/kubectx/completion/_kubectx.zsh" ]]; then
+        source "$HOME/.local/kubectx/completion/_kubectx.zsh"
     elif [[ -f /usr/share/zsh/vendor-completions/_kubectx ]]; then
         source /usr/share/zsh/vendor-completions/_kubectx
     fi
